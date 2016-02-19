@@ -70,7 +70,7 @@ class Game < Gosu::Window
     @spawned_asteroids = []
     @remove_shapes = []
     @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
-      asteroid = @asteroids.detect { |ast| ast.shape == asteroid_shape }
+      asteroid = asteroid_shape.object
 
       @score += asteroid.score
       @beep.play
@@ -99,7 +99,7 @@ class Game < Gosu::Window
       # We would probably solve this by creating a separate @remove_bodies array to remove the Bodies
       # of the asteroids that were gathered by the Player
       @remove_shapes.each do |shape|
-        @asteroids.delete_if { |asteroid| asteroid.shape == shape }
+        @asteroids.delete(shape.object) if shape.object.is_a? Asteroid
         @space.remove_body(shape.body)
         @space.remove_shape(shape)
       end

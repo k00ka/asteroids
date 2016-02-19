@@ -8,9 +8,11 @@ class Asteroid
     @shape = shape
     @spawn = spawn
     @color = random_color
+
     @shape.body.p = CP::Vec2.new(rand * WIDTH, rand * HEIGHT) # position
     @shape.body.v = CP::Vec2.new(0.0, 0.0) # velocity
     @shape.body.a = 3 * Math::PI / 2.0 # angle in radians; faces towards top of screen
+    @shape.object = self
   end
 
   def self.cp_shape

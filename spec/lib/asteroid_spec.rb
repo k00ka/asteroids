@@ -14,7 +14,7 @@ RSpec.describe Asteroid do
     end
 
     context "when initialized" do
-      let(:shape)    { double("asteroid shape", body: FakeBody.new) }
+      let(:shape)    { double("asteroid shape", :body => FakeBody.new, :object= => nil) }
       let!(:subject) { described_class.new(double, shape) }
 
       it "body is assigned a position" do
@@ -27,7 +27,7 @@ RSpec.describe Asteroid do
         expect(shape.body.v.y).to eql 0.0
       end
 
-      it "faces upwards" do
+      it "body faces upwards" do
         expect(shape.body.a).to be_within(0.1).of 3 * Math::PI / 2.0
       end
     end
