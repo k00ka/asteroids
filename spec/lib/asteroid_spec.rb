@@ -10,12 +10,12 @@ FakeBody = Struct.new :p, :v, :a
 RSpec.describe Asteroid do
   describe ".new" do
     it "is created" do
-      expect(described_class.new(double, double.as_null_object)).to be_an_instance_of described_class
+      expect(described_class.new(double.as_null_object)).to be_an_instance_of described_class
     end
 
     context "when initialized" do
       let(:shape)    { double("asteroid shape", :body => FakeBody.new, :object= => nil) }
-      let!(:subject) { described_class.new(double, shape) }
+      let!(:subject) { described_class.new(shape) }
 
       it "body is assigned a position" do
         expect(shape.body.p.x).to satisfy("x within window width") { |x| x >= 0 && x <= WIDTH }
@@ -33,8 +33,26 @@ RSpec.describe Asteroid do
     end
   end
 
+  describe ".default_animation" do
+    it "returns an animation" do
+      expect(described_class.default_animation).to be_an_instance_of Array
+      described_class.default_animation.each do |img|
+        expect(img).to be_an_instance_of Gosu::Image
+      end
+    end
+  end
+
+  describe ".default_animation=" do
+    it "changes the default animation" do
+      animation = double("animation")
+      described_class.default_animation = animation
+
+      expect(described_class.default_animation).to be animation
+    end
+  end
+
   describe "#score" do
-    subject { described_class.new(double, double.as_null_object) }
+    subject { described_class.new(double.as_null_object) }
     it "has a score of 10" do
       expect(subject.score).to be 10
     end
@@ -42,7 +60,7 @@ RSpec.describe Asteroid do
 
   describe "#spawns" do
     context "with no remaining spawns" do
-      subject { described_class.new(double, double.as_null_object, 0) }
+      subject { described_class.new(double.as_null_object, 0) }
 
       it "returns empty" do
         expect(subject.spawns).to be_empty
@@ -50,7 +68,7 @@ RSpec.describe Asteroid do
     end
 
     context "with 2 spawns remaining" do
-      subject { described_class.new(double, double.as_null_object, 2) }
+      subject { described_class.new(double.as_null_object, 2) }
 
       it "returns 2 asteroids" do
         expect(subject.spawns.length).to be 2

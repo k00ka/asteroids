@@ -3,8 +3,16 @@
 class Asteroid
   attr_reader :shape, :spawn
 
-  def initialize(animation, shape, spawn = 2)
-    @animation = animation
+  def self.default_animation=(animation)
+    @@animation = animation
+  end
+
+  def self.default_animation
+    @@animation ||= Gosu::Image.load_tiles("media/astsml1.bmp", 26, 26)
+  end
+
+  def initialize(shape, spawn = 2, animation: nil)
+    @animation = animation || self.class.default_animation
     @shape = shape
     @spawn = spawn
     @color = random_color
@@ -32,7 +40,7 @@ class Asteroid
 
   def spawns
     return [] if @spawn.zero?
-    (0...@spawn).map { self.class.new(@animation, self.class.cp_shape, @spawn - 1) }
+    (0...@spawn).map { self.class.new(self.class.cp_shape, @spawn - 1, animation: @animation) }
   end
 
   private
