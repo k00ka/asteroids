@@ -3,6 +3,7 @@
 require_relative 'zorder'
 require_relative 'player'
 require_relative 'asteroid'
+require_relative 'level'
 
 # The number of steps to process every Gosu update
 # The Player ship can get going so fast as to "move through" a
@@ -56,8 +57,8 @@ class Game < Gosu::Window
     @player = Player.new(shape)
     @player.warp(CP::Vec2.new(320, 240)) # move to the center of the window
 
-    @asteroid_anim = Gosu::Image.load_tiles("media/astsml1.bmp", 26, 26)
     @asteroids = Array.new
+    @level = Level.new(@space, @asteroids)
 
     # Here we define what is supposed to happen when a Player (ship) collides with a asteroid
     # I create a @remove_shapes array because we cannot remove either Shapes or Bodies
@@ -67,10 +68,15 @@ class Game < Gosu::Window
     # by iterating over the @remove_shapes array
     # Also note that both Shapes involved in the collision are passed into the closure
     # in the same order that their collision_types are defined in the add_collision_func call
+    @spawned_asteroids = []
     @remove_shapes = []
     @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
-      @score += 10
+      asteroid = asteroid_shape.object
+
+      @score += asteroid.score
       @beep.play
+
+      @spawned_asteroids.concat(asteroid.spawns)
       @remove_shapes << asteroid_shape
     end
 
@@ -94,11 +100,19 @@ class Game < Gosu::Window
       # We would probably solve this by creating a separate @remove_bodies array to remove the Bodies
       # of the asteroids that were gathered by the Player
       @remove_shapes.each do |shape|
-        @asteroids.delete_if { |asteroid| asteroid.shape == shape }
+        @asteroids.delete(shape.object) if shape.object.is_a? Asteroid
         @space.remove_body(shape.body)
         @space.remove_shape(shape)
       end
       @remove_shapes.clear # clear out the shapes for next pass
+
+      # add new asteroids to the world
+      @spawned_asteroids.each do |ast|
+        @asteroids << ast
+        @space.add_body(ast.shape.body)
+        @space.add_shape(ast.shape)
+      end
+      @spawned_asteroids.clear
 
       # When a force or torque is set on a Body, it is cumulative
       # This means that the force you applied last SUBSTEP will compound with the
@@ -126,16 +140,7 @@ class Game < Gosu::Window
     end
 
     # Each update (not SUBSTEP) we see if we need to add more asteroids
-    if rand(100) < 4 and @asteroids.size < 25 then
-      body = CP::Body.new(0.0001, 0.0001)
-      shape = CP::Shape::Circle.new(body, 25/2, CP::Vec2.new(0.0, 0.0))
-      shape.collision_type = :asteroid
-
-      @space.add_body(body)
-      @space.add_shape(shape)
-
-      @asteroids.push(Asteroid.new(@asteroid_anim, shape))
-    end
+    @level.next! if @level.complete?
   end
 
   def draw
