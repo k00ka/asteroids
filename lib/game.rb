@@ -3,6 +3,7 @@
 require_relative 'zorder'
 require_relative 'player'
 require_relative 'asteroid'
+require_relative 'level'
 
 # The number of steps to process every Gosu update
 # The Player ship can get going so fast as to "move through" a
@@ -56,8 +57,8 @@ class Game < Gosu::Window
     @player = Player.new(shape)
     @player.warp(CP::Vec2.new(320, 240)) # move to the center of the window
 
-    @asteroid = Gosu::Image.new("media/astsml1.bmp")
     @asteroids = Array.new
+    @level = Level.new(@space, @asteroids)
 
     # Here we define what is supposed to happen when a Player (ship) collides with a asteroid
     # I create a @remove_shapes array because we cannot remove either Shapes or Bodies
@@ -139,15 +140,7 @@ class Game < Gosu::Window
     end
 
     # Each update (not SUBSTEP) we see if we need to add more asteroids
-    if @asteroids.size < 25 && rand(100) < 4
-      shape = Asteroid.cp_shape
-      body  = shape.body
-
-      @space.add_body(body)
-      @space.add_shape(shape)
-
-      @asteroids.push(Asteroid.new(@asteroid, shape))
-    end
+    @level.next! if @level.complete?
   end
 
   def draw
