@@ -16,13 +16,10 @@
 # users commonly want.
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
-<<<<<<< HEAD
-=======
 
 require "pry"
 require "pry-nav"
 
->>>>>>> 89f744053dc8ab39f6394ed20869f548fc17d4cc
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
