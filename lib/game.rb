@@ -33,14 +33,14 @@ class Game < Gosu::Window
     # This is not realistic behavior in a vacuum of space, but it gives the game
     # the feel I'd like in this situation
     @space = CP::Space.new
-    @space.damping = 0.8
+    #@space.damping = 0.8
 
     # Create the Body for the Player
     body = CP::Body.new(10.0, 150.0)
 
     # In order to create a shape, we must first define it
     # Chipmunk defines 3 types of Shapes: Segments, Circles and Polys
-    # We'll use s simple, 4 sided Poly for our Player (ship)
+    # We'll use a simple, 4 sided Poly for our Player (ship)
     # You need to define the vectors so that the "top" of the Shape is towards 0 radians (the right)
     shape_array = [CP::Vec2.new(-25.0, -25.0), CP::Vec2.new(-25.0, 25.0), CP::Vec2.new(25.0, 1.0), CP::Vec2.new(25.0, -1.0)]
     shape = CP::Shape::Poly.new(body, shape_array, CP::Vec2.new(0,0))
@@ -56,7 +56,7 @@ class Game < Gosu::Window
     @player = Player.new(shape)
     @player.warp(CP::Vec2.new(320, 240)) # move to the center of the window
 
-    @asteroid_anim = Gosu::Image.load_tiles("media/astsml1.bmp", 26, 26)
+    @asteroid = Gosu::Image.new("media/astsml1.bmp")
     @asteroids = Array.new
 
     # Here we define what is supposed to happen when a Player (ship) collides with a asteroid
@@ -134,12 +134,11 @@ class Game < Gosu::Window
       @space.add_body(body)
       @space.add_shape(shape)
 
-      @asteroids.push(Asteroid.new(@asteroid_anim, shape))
+      @asteroids.push(Asteroid.new(@asteroid, shape))
     end
   end
 
   def draw
-    #@background_image.draw(0, 0, ZOrder::Background)
     @player.draw
     @asteroids.each { |asteroid| asteroid.draw }
     @font.draw("Score: #{@score}", 10, 10, ZOrder::UI, 1.0, 1.0, 0xff_ffff00)
