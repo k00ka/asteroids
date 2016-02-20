@@ -68,7 +68,7 @@ class Game < Gosu::Window
     # by iterating over the @remove_shapes array
     # Also note that both Shapes involved in the collision are passed into the closure
     # in the same order that their collision_types are defined in the add_collision_func call
-    @spawned_asteroids = []
+    @split_asteroids = []
     @remove_shapes = []
     @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
       asteroid = asteroid_shape.object
@@ -76,7 +76,7 @@ class Game < Gosu::Window
       @score += asteroid.score
       @beep.play
 
-      @spawned_asteroids.concat(asteroid.spawns)
+      @split_asteroids.concat(asteroid.chunks)
       @remove_shapes << asteroid_shape
     end
 
@@ -107,12 +107,12 @@ class Game < Gosu::Window
       @remove_shapes.clear # clear out the shapes for next pass
 
       # add new asteroids to the world
-      @spawned_asteroids.each do |ast|
+      @split_asteroids.each do |ast|
         @asteroids << ast
         @space.add_body(ast.shape.body)
         @space.add_shape(ast.shape)
       end
-      @spawned_asteroids.clear
+      @split_asteroids.clear
 
       # When a force or torque is set on a Body, it is cumulative
       # This means that the force you applied last SUBSTEP will compound with the
