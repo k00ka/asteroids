@@ -33,9 +33,9 @@ RSpec.describe Asteroid do
     end
   end
 
-  describe ".large_asteroid_image" do
+  describe ".random_large_asteroid_image" do
     it "returns an image" do
-      expect(described_class.large_asteroid_image).to be_an_instance_of Gosu::Image
+      expect(described_class.random_large_asteroid_image).to be_an_instance_of Gosu::Image
     end
   end
 

@@ -3,12 +3,26 @@
 class Asteroid
   attr_reader :shape, :chunk
 
-  def self.large_asteroid_image
-    @@large_asteroid_image ||= Gosu::Image.new("media/astsml1.bmp")
+  def self.random_large_asteroid_image
+    @@large_asteroid_image1 ||= Gosu::Image.new("media/astsml1.bmp")
+    @@large_asteroid_image2 ||= Gosu::Image.new("media/astsml2.bmp")
+    rand > 0.5 ? @@large_asteroid_image1 : @@large_asteroid_image2
+  end
+
+  def self.random_medium_asteroid_image
+    @@medium_asteroid_image1 ||= Gosu::Image.new("media/astsml1.bmp")
+    @@medium_asteroid_image2 ||= Gosu::Image.new("media/astsml2.bmp")
+    rand > 0.5 ? @@medium_asteroid_image1 : @@medium_asteroid_image2
+  end
+
+  def self.random_small_asteroid_image
+    @@small_asteroid_image1 ||= Gosu::Image.new("media/astsml1.bmp")
+    @@small_asteroid_image2 ||= Gosu::Image.new("media/astsml2.bmp")
+    rand > 0.5 ? @@small_asteroid_image1 : @@small_asteroid_image2
   end
 
   def initialize(shape, chunk = 2, image = nil)
-    @image = image || self.class.large_asteroid_image
+    @image = image || self.class.random_large_asteroid_image
     @shape = shape
     @chunk = chunk
     @color = Gosu::Color.new(0xff_ffffff)
