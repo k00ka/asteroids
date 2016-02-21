@@ -19,6 +19,10 @@ module Asteroid
       @color = Gosu::Color.new(0xff_ffffff)
     end
 
+    def update
+      @shape.body.p = CP::Vec2.new(@shape.body.p.x % WIDTH, @shape.body.p.y % HEIGHT)
+    end
+
     def draw
       scaled_width = @image.width * scale / 2.0
       scaled_height = @image.height * scale / 2.0

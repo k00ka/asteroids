@@ -1,8 +1,8 @@
+require "support/fakes/body"
+require "support/fakes/shape"
+
 WIDTH = 800
 HEIGHT = 600
-
-FakeBody = Struct.new :p, :v, :a
-FakeShape = Struct.new :body, :object
 
 RSpec.shared_examples "an initialized asteroid" do
   describe ".new" do

@@ -124,6 +124,7 @@ class Game < Gosu::Window
       @player.shape.body.reset_forces
 
       # Wrap around the screen to the other side
+      @asteroids.each(&:update)
       @player.validate_position
 
       # Check keyboard
