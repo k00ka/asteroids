@@ -32,8 +32,10 @@ RSpec.describe MediumAsteroid do
   end
 
   describe "chunks" do
-    it "breaks into 2 additional asteroids" do
-      expect(subject.chunks.length).to be 2
+    it "breaks into 2 Small asteroids" do
+      chunks = subject.chunks
+      expect(chunks.length).to be 2
+      chunks.each { |c| expect(c).to be_an_instance_of SmallAsteroid }
     end
   end
 end

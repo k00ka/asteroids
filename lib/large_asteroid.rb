@@ -17,7 +17,7 @@ class LargeAsteroid < Asteroid
   end
 
   def chunks
-    [LargeAsteroid.new, LargeAsteroid.new]
+    [MediumAsteroid.new, MediumAsteroid.new]
   end
 
   private
