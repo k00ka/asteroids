@@ -5,6 +5,8 @@ module Asteroid
 
     @@images = [Gosu::Image.new("media/astsml1.bmp"), Gosu::Image.new("media/astsml2.bmp")]
 
+    attr_reader :image, :shape, :body
+
     def initialize(shape: nil)
       @image = default_image
       @shape = shape || default_shape
