@@ -2,7 +2,10 @@
 
 require_relative 'zorder'
 require_relative 'player'
-require_relative 'asteroid'
+require_relative 'asteroid/base'
+require_relative 'asteroid/large'
+require_relative 'asteroid/medium'
+require_relative 'asteroid/small'
 require_relative 'level'
 
 # The number of steps to process every Gosu update
@@ -55,7 +58,7 @@ class Game < Gosu::Window
     @space.add_shape(shape)
 
     @player = Player.new(shape)
-    @player.warp(CP::Vec2.new(320, 240)) # move to the center of the window
+    @player.warp(CP::Vec2.new(WIDTH / 2, HEIGHT / 2)) # move to the center of the window
 
     @asteroids = Array.new
     @level = Level.new(@space, @asteroids)
@@ -73,7 +76,7 @@ class Game < Gosu::Window
     @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
       asteroid = asteroid_shape.object
 
-      @score += asteroid.score
+      @score += asteroid.points
       @beep.play
 
       @split_asteroids.concat(asteroid.chunks)
@@ -100,7 +103,7 @@ class Game < Gosu::Window
       # We would probably solve this by creating a separate @remove_bodies array to remove the Bodies
       # of the asteroids that were gathered by the Player
       @remove_shapes.each do |shape|
-        @asteroids.delete(shape.object) if shape.object.is_a? Asteroid
+        @asteroids.delete(shape.object) if shape.object.is_a? Asteroid::Base
         @space.remove_body(shape.body)
         @space.remove_shape(shape)
       end
