@@ -15,34 +15,38 @@ class Player
     # the bottom; thus 3PI/2 is the top
     @shape.body.a = (3*Math::PI/2.0) # angle in radians; faces towards top of screen
   end
+
+  def apply_damping
+    @shape.body.update_velocity(CP::Vec2.new(0.0, 0.0), 0.996, 0.0)
+  end
   
   # Directly set the position of our Player
   def warp(vect)
     @shape.body.p = vect
   end
   
-  # Apply negative Torque; Chipmunk will do the rest
-  # SUBSTEPS is used as a divisor to keep turning rate constant
-  # even if the number of steps per update are adjusted
-  def turn_left
-    @shape.body.t -= 400.0/SUBSTEPS
+  # Turn a constant speed cw
+  def turn_right(rate = 6.0)
+    @shape.body.w = rate/SUBSTEPS
   end
-  
-  # Apply positive Torque; Chipmunk will do the rest
-  # SUBSTEPS is used as a divisor to keep turning rate constant
-  # even if the number of steps per update are adjusted
-  def turn_right
-    @shape.body.t += 400.0/SUBSTEPS
+
+  # Turn a constant speed ccw
+  def turn_left(rate = 6.0)
+    turn_right(-rate)
   end
-  
+
+  def turn_none
+    turn_right(0.0)
+  end
+
   # Apply forward force; Chipmunk will do the rest
   # SUBSTEPS is used as a divisor to keep acceleration rate constant
   # even if the number of steps per update are adjusted
   # Here we must convert the angle (facing) of the body into
   # forward momentum by creating a vector in the direction of the facing
   # and with a magnitude representing the force we want to apply
-  def accelerate
-    @shape.body.apply_force((radians_to_vec2(@shape.body.a) * (3000.0/SUBSTEPS)), CP::Vec2.new(0.0, 0.0))
+  def accelerate(force = 3000.0)
+    @shape.body.apply_force((radians_to_vec2(@shape.body.a) * (force/SUBSTEPS)), CP::Vec2.new(0.0, 0.0))
   end
   
   # Wrap to the other side of the screen when we fly off the edge

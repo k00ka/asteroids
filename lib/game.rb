@@ -124,15 +124,12 @@ class Game < Gosu::Window
       @player.validate_position
 
       # Check keyboard
-      if Gosu::button_down? Gosu::KbLeft
-        @player.turn_left
-      end
-      if Gosu::button_down? Gosu::KbRight
-        @player.turn_right
-      end
-      if Gosu::button_down? Gosu::KbUp
-        @player.accelerate
-      end
+      @player.apply_damping
+      @player.turn_none
+      @player.turn_right if Gosu::button_down?(Gosu::KbRight) && !Gosu::button_down?(Gosu::KbLeft)
+      @player.turn_left if Gosu::button_down?(Gosu::KbLeft) && !Gosu::button_down?(Gosu::KbRight)
+
+      @player.accelerate if Gosu::button_down?(Gosu::KbUp)
 
       # Perform the step over @dt period of time
       # For best performance @dt should remain consistent for the game
