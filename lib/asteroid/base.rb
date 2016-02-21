@@ -18,7 +18,10 @@ module Asteroid
     end
 
     def draw
-      @image.draw(@shape.body.p.x - @image.width / 2.0, @shape.body.p.y - @image.height / 2.0, ZOrder::Asteroids, 1, 1, @color, :add)
+      scaled_width = @image.width * scale / 2.0
+      scaled_height = @image.height * scale / 2.0
+
+      @image.draw(@shape.body.p.x - scaled_width, @shape.body.p.y - scaled_height, ZOrder::Asteroids, scale, scale, @color, :add)
     end
 
     protected
@@ -28,7 +31,8 @@ module Asteroid
     end
 
     def default_shape
-      CP::Shape::Circle.new(default_body, 25/2, CP::Vec2.new(0.0, 0.0)).tap do |s|
+      scaled_radius = 25.to_f / 2 * scale
+      CP::Shape::Circle.new(default_body, scaled_radius, CP::Vec2.new(0.0, 0.0)).tap do |s|
         s.collision_type = :asteroid
       end
     end

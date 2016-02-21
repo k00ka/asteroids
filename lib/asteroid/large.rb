@@ -9,5 +9,11 @@ module Asteroid
     def chunks
       [Medium.new, Medium.new]
     end
+
+    private
+
+    def scale
+      4
+    end
   end
 end

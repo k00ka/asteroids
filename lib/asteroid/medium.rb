@@ -9,5 +9,11 @@ module Asteroid
     def chunks
       [Small.new, Small.new]
     end
+
+    private
+
+    def scale
+      2
+    end
   end
 end
