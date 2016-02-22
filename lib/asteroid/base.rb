@@ -3,6 +3,7 @@
 module Asteroid
   class Base
     attr_reader :image, :shape, :body
+    attr_writer :shape if defined? RSpec
 
     @@boom_sound = Gosu::Sample.new("media/boom.wav")
     @@white = Gosu::Color.new(0xff_ffffff)

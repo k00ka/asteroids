@@ -32,12 +32,14 @@ RSpec.shared_examples "an initialized asteroid" do
       describe "body" do
         let(:shape) { double("asteroid shape", :body => FakeBody.new, :object= => nil) }
         let!(:subject) do
-          described_class.new(shape: shape)
+          described_class.new.tap do |subj|
+            subj.shape = shape
+          end
         end
 
         it "is in the window" do
           expect(shape.body.p.x).to satisfy("x within window width") { |x| x >= 0 && x <= WIDTH }
-          expect(shape.body.p.y).to satisfy("x within window width") { |y| y >= 0 && y <= HEIGHT }
+          expect(shape.body.p.y).to satisfy("y within window height") { |y| y >= 0 && y <= HEIGHT }
         end
 
         it "has default velocity" do
