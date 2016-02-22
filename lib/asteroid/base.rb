@@ -4,33 +4,52 @@ module Asteroid
   class Base
     attr_reader :image, :shape, :body
 
-    def initialize(shape: nil)
+    @@boom_sound = Gosu::Sample.new("media/boom.wav")
+    @@white = Gosu::Color.new(0xff_ffffff)
+    @@facing_upward =  3*Math::PI/2.0
+
+    def initialize(position = CP::Vec2.new(rand * WIDTH, rand * HEIGHT))
       @image = self.class.random_asteroid_image
       @shape = shape || default_shape
       @shape.object = self
       @body = @shape.body.tap do |b|
-        b.p = CP::Vec2.new(rand * WIDTH, rand * HEIGHT) # position
+        b.p = position
         b.v = self.class.random_velocity
-        b.a = 3 * Math::PI / 2.0 # angle in radians; faces towards top of screen
+        b.a = @@facing_upward
       end
-      @color = Gosu::Color.new(0xff_ffffff)
     end
 
     def validate_position
       @shape.body.p = CP::Vec2.new(@shape.body.p.x % WIDTH, @shape.body.p.y % HEIGHT)
     end
 
+    def split(space)
+      @@boom_sound.play
+      remove_from_space(space)
+      chunks.each { |chunk| chunk.add_to_space(space) }
+    end
+
+    def add_to_space(space)
+      space.add_body(shape.body)
+      space.add_shape(shape)
+    end
+
+    def remove_from_space(space)
+      space.remove_body(shape.body)
+      space.remove_shape(shape)
+    end
+
     def draw
       #scaled_width = @image.width * scale / 2.0
       #scaled_height = @image.height * scale / 2.0
       #@image.draw(@shape.body.p.x - scaled_width, @shape.body.p.y - scaled_height, ZOrder::Asteroids, scale, scale, @color, :add)
-      @image.draw(@shape.body.p.x - @image.width / 2.0, @shape.body.p.y - @image.height / 2.0, ZOrder::Asteroids, 1, 1, @color, :add)
+      @image.draw(@shape.body.p.x - @image.width / 2.0, @shape.body.p.y - @image.height / 2.0, ZOrder::Asteroids, 1, 1, @@white, :add)
     end
 
     protected
     def self.random_asteroid_image
       size = name.gsub(/^.*::/,"").downcase
-      @@asteroid_images ||= [
+      @@asteroid_images = [
         Gosu::Image.new("media/ast#{size}1.bmp"),
         Gosu::Image.new("media/ast#{size}2.bmp"),
         Gosu::Image.new("media/ast#{size}3.bmp"),

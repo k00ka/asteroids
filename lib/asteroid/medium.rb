@@ -1,3 +1,5 @@
+require_relative 'small'
+
 module Asteroid
   class Medium < Asteroid::Base
     def points
@@ -5,7 +7,7 @@ module Asteroid
     end
 
     def chunks
-      [Small.new, Small.new]
+      [Small.new(body.p), Small.new(body.p)]
     end
 
   private

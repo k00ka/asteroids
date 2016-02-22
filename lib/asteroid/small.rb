@@ -1,3 +1,5 @@
+require_relative 'base'
+
 module Asteroid
   class Small < Asteroid::Base
     def points

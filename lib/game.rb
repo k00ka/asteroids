@@ -2,10 +2,7 @@
 
 require_relative 'zorder'
 require_relative 'player'
-require_relative 'asteroid/base'
 require_relative 'asteroid/large'
-require_relative 'asteroid/medium'
-require_relative 'asteroid/small'
 require_relative 'level'
 require_relative 'score'
 
@@ -24,7 +21,8 @@ class Game < Gosu::Window
     self.caption = "Ruby Hack Night Asteroids"
 
     # Put the beep here, as it is the environment now that determines collision
-    @beep = Gosu::Sample.new("media/boom.wav")
+    @high = Gosu::Sample.new("media/high.wav")
+    @low = Gosu::Sample.new("media/low.wav")
 
     # Put the score here, as it is the environment that tracks this now
     @score = Score.new
@@ -74,12 +72,7 @@ class Game < Gosu::Window
     @remove_shapes = []
     @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
       asteroid = asteroid_shape.object
-
-      @score.increment asteroid.points
-      @beep.play
-
-      @split_asteroids.concat(asteroid.chunks)
-      @remove_shapes << asteroid_shape
+      @split_asteroids << asteroid
     end
 
     # Here we tell Space that we don't want one asteroid bumping into another
@@ -94,25 +87,10 @@ class Game < Gosu::Window
   def update
     # Step the physics environment SUBSTEPS times each update
     SUBSTEPS.times do
-      # This iterator makes an assumption of one Shape per asteroid making it safe to remove
-      # each Shape's Body as it comes up
-      # If our asteroids had multiple Shapes, as would be required if we were to meticulously
-      # define their true boundaries, we couldn't do this as we would remove the Body
-      # multiple times
-      # We would probably solve this by creating a separate @remove_bodies array to remove the Bodies
-      # of the asteroids that were gathered by the Player
-      @remove_shapes.each do |shape|
-        @asteroids.delete(shape.object) if shape.object.is_a? Asteroid::Base
-        @space.remove_body(shape.body)
-        @space.remove_shape(shape)
-      end
-      @remove_shapes.clear # clear out the shapes for next pass
-
-      # add new asteroids to the world
-      @split_asteroids.each do |ast|
-        @asteroids << ast
-        @space.add_body(ast.shape.body)
-        @space.add_shape(ast.shape)
+      # for each asteroid collision
+      @split_asteroids.each do |asteroid|
+        @asteroids.delete(asteroid)
+        @asteroids += asteroid.split(@space)
       end
       @split_asteroids.clear
       @asteroids.each(&:validate_position)
