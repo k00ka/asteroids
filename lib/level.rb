@@ -12,11 +12,12 @@ class Level
 
   def next!
     new_asteroids.times do
-      shape = Asteroid.cp_shape
-      @space.add_body(shape.body)
-      @space.add_shape(shape)
+      asteroid = Asteroid::Large.new
 
-      @asteroids << Asteroid.new(shape)
+      @space.add_body(asteroid.body)
+      @space.add_shape(asteroid.shape)
+
+      @asteroids << asteroid
     end
   end
 

@@ -2,7 +2,10 @@
 
 require_relative 'zorder'
 require_relative 'player'
-require_relative 'asteroid'
+require_relative 'asteroid/base'
+require_relative 'asteroid/large'
+require_relative 'asteroid/medium'
+require_relative 'asteroid/small'
 require_relative 'level'
 
 # The number of steps to process every Gosu update
@@ -72,7 +75,7 @@ class Game < Gosu::Window
     @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
       asteroid = asteroid_shape.object
 
-      @score += asteroid.score
+      @score += asteroid.points
       @beep.play
 
       @split_asteroids.concat(asteroid.chunks)
@@ -99,7 +102,7 @@ class Game < Gosu::Window
       # We would probably solve this by creating a separate @remove_bodies array to remove the Bodies
       # of the asteroids that were gathered by the Player
       @remove_shapes.each do |shape|
-        @asteroids.delete(shape.object) if shape.object.is_a? Asteroid
+        @asteroids.delete(shape.object) if shape.object.is_a? Asteroid::Base
         @space.remove_body(shape.body)
         @space.remove_shape(shape)
       end
@@ -112,15 +115,15 @@ class Game < Gosu::Window
         @space.add_shape(ast.shape)
       end
       @split_asteroids.clear
-      @asteroids.each { |a| a.validate_position }
+      @asteroids.each(&:validate_position)
+
+      # Adjust player forces
 
       # When a force or torque is set on a Body, it is cumulative
       # This means that the force you applied last SUBSTEP will compound with the
       # force applied this SUBSTEP; which is probably not the behavior you want
       # We reset the forces on the Player each SUBSTEP for this reason
       @player.shape.body.reset_forces
-
-      # Wrap around the screen to the other side
       @player.validate_position
       @player.apply_damping
       @player.turn_none

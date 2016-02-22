@@ -9,7 +9,7 @@ class Player
     @shape = shape
     @shape.body.p = CP::Vec2.new(0.0, 0.0) # position
     @shape.body.v = CP::Vec2.new(0.0, 0.0) # velocity
-    
+
     # Keep in mind that down the screen is positive y, which means that PI/2 radians,
     # which you might consider the top in the traditional Trig unit circle sense is actually
     # the bottom; thus 3PI/2 is the top
@@ -19,12 +19,16 @@ class Player
   def apply_damping
     @shape.body.update_velocity(CP::Vec2.new(0.0, 0.0), 0.997, 1.0/60.0)
   end
-  
+
+  def body
+    @shape.body
+  end
+
   # Directly set the position of our Player
   def warp(vect)
     @shape.body.p = vect
   end
-  
+
   # Turn a constant speed cw
   def turn_right(rate = 6.0)
     @shape.body.w = rate/SUBSTEPS
@@ -48,17 +52,16 @@ class Player
   def accelerate(force = 3000.0)
     @shape.body.apply_force((radians_to_vec2(@shape.body.a) * (force/SUBSTEPS)), CP::Vec2.new(0.0, 0.0))
   end
-  
+
   # Wrap to the other side of the screen when we fly off the edge
   def validate_position
-    l_position = CP::Vec2.new(@shape.body.p.x % WIDTH, @shape.body.p.y % HEIGHT)
-    @shape.body.p = l_position
+    @shape.body.p = CP::Vec2.new(@shape.body.p.x % WIDTH, @shape.body.p.y % HEIGHT)
   end
-  
+
   def draw
     @image.draw_rot(@shape.body.p.x, @shape.body.p.y, ZOrder::Player, @shape.body.a.radians_to_gosu)
   end
-  
+
 private
   # Convenience method for converting from radians to a Vec2 vector.
   def radians_to_vec2(radians)
