@@ -17,6 +17,9 @@
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
+require "gosu"
+require "chipmunk"
+
 require "pry"
 require "pry-nav"
 
