@@ -24,17 +24,16 @@ class Game < Gosu::Window
 
     # Put the score here, as it is the environment that tracks this now
     @score = 0
-    @font = Gosu::Font.new(20)
+    @font = Gosu::Font.new(70, name: "media/hyperspace.ttf")
 
     # Time increment over which to apply a physics "step" ("delta t")
-    @dt = (1.0/60.0)
+    @dt = 1.0/60.0
 
     # Create our Space and set its damping
     # A damping of 0.8 causes the ship bleed off its force and torque over time
     # This is not realistic behavior in a vacuum of space, but it gives the game
     # the feel I'd like in this situation
     @space = CP::Space.new
-    #@space.damping = 0.8
 
     # Create the Body for the Player
     body = CP::Body.new(10.0, 150.0)
@@ -55,7 +54,7 @@ class Game < Gosu::Window
     @space.add_shape(shape)
 
     @player = Player.new(shape)
-    @player.warp(CP::Vec2.new(320, 240)) # move to the center of the window
+    @player.warp(CP::Vec2.new(WIDTH/2, HEIGHT/2)) # move to the center of the window
 
     @asteroids = Array.new
     @level = Level.new(@space, @asteroids)
@@ -113,6 +112,7 @@ class Game < Gosu::Window
         @space.add_shape(ast.shape)
       end
       @split_asteroids.clear
+      @asteroids.each { |a| a.validate_position }
 
       # When a force or torque is set on a Body, it is cumulative
       # This means that the force you applied last SUBSTEP will compound with the
@@ -122,13 +122,12 @@ class Game < Gosu::Window
 
       # Wrap around the screen to the other side
       @player.validate_position
-
-      # Check keyboard
       @player.apply_damping
       @player.turn_none
+
+      # Check keyboard
       @player.turn_right if Gosu::button_down?(Gosu::KbRight) && !Gosu::button_down?(Gosu::KbLeft)
       @player.turn_left if Gosu::button_down?(Gosu::KbLeft) && !Gosu::button_down?(Gosu::KbRight)
-
       @player.accelerate if Gosu::button_down?(Gosu::KbUp)
 
       # Perform the step over @dt period of time
@@ -143,12 +142,10 @@ class Game < Gosu::Window
   def draw
     @player.draw
     @asteroids.each { |asteroid| asteroid.draw }
-    @font.draw("Score: #{@score}", 10, 10, ZOrder::UI, 1.0, 1.0, 0xff_ffff00)
+    @font.draw_rel(@score > 0 ? @score : "00", 200, 10, ZOrder::UI, 1.0, 0.0)
   end
 
   def button_down(id)
-    if id == Gosu::KbEscape
-      close
-    end
+    close if id == Gosu::KbEscape
   end
 end

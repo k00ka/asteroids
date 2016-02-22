@@ -17,7 +17,7 @@ class Player
   end
 
   def apply_damping
-    @shape.body.update_velocity(CP::Vec2.new(0.0, 0.0), 0.996, 0.0)
+    @shape.body.update_velocity(CP::Vec2.new(0.0, 0.0), 0.997, 1.0/60.0)
   end
   
   # Directly set the position of our Player

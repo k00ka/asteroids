@@ -4,21 +4,33 @@ class Asteroid
   attr_reader :shape, :chunk
 
   def self.random_large_asteroid_image
-    @@large_asteroid_image1 ||= Gosu::Image.new("media/astsml1.bmp")
-    @@large_asteroid_image2 ||= Gosu::Image.new("media/astsml2.bmp")
-    rand > 0.5 ? @@large_asteroid_image1 : @@large_asteroid_image2
+    @@large_asteroid_images ||= [
+      Gosu::Image.new("media/astlrg1.bmp"),
+      Gosu::Image.new("media/astlrg2.bmp"),
+      Gosu::Image.new("media/astlrg3.bmp"),
+      Gosu::Image.new("media/astlrg4.bmp")
+    ]
+    @@large_asteroid_images.sample
   end
 
   def self.random_medium_asteroid_image
-    @@medium_asteroid_image1 ||= Gosu::Image.new("media/astsml1.bmp")
-    @@medium_asteroid_image2 ||= Gosu::Image.new("media/astsml2.bmp")
-    rand > 0.5 ? @@medium_asteroid_image1 : @@medium_asteroid_image2
+    @@medium_asteroid_images ||= [
+      Gosu::Image.new("media/astmed1.bmp"),
+      Gosu::Image.new("media/astmed2.bmp"),
+      Gosu::Image.new("media/astmed3.bmp"),
+      Gosu::Image.new("media/astmed4.bmp")
+    ]
+    @medium_asteroid_images.sample
   end
 
   def self.random_small_asteroid_image
-    @@small_asteroid_image1 ||= Gosu::Image.new("media/astsml1.bmp")
-    @@small_asteroid_image2 ||= Gosu::Image.new("media/astsml2.bmp")
-    rand > 0.5 ? @@small_asteroid_image1 : @@small_asteroid_image2
+    @@small_asteroid_images ||=  [
+      Gosu::Image.new("media/astsml1.bmp"),
+      Gosu::Image.new("media/astsml2.bmp"),
+      Gosu::Image.new("media/astsml3.bmp"),
+      Gosu::Image.new("media/astsml4.bmp")
+    ]
+    @@small_asteroid_images.sample
   end
 
   def initialize(shape, chunk = 2, image = nil)
@@ -28,9 +40,15 @@ class Asteroid
     @color = Gosu::Color.new(0xff_ffffff)
 
     @shape.body.p = CP::Vec2.new(rand * WIDTH, rand * HEIGHT) # position
-    @shape.body.v = CP::Vec2.new(5.0, 5.0) # velocity
+    @shape.body.v = self.class.random_velocity
     @shape.body.a = 3 * Math::PI / 2.0 # angle in radians; faces towards top of screen
     @shape.object = self
+  end
+
+  def self.random_velocity
+    direction = (rand * 32).to_i / 16
+    speed = 75 * (1 + (rand * 4).to_i / 3)
+    CP::Vec2.new(Math::cos(direction), Math::sin(direction)) * speed/SUBSTEPS
   end
 
   def self.cp_shape
@@ -50,5 +68,11 @@ class Asteroid
   def chunks
     return [] if @chunk.zero?
     (0...@chunk).map { self.class.new(self.class.cp_shape, @chunk - 1, @image) }
+  end
+  #
+  # Wrap to the other side of the screen when asteroid moves off edge
+  def validate_position
+    l_position = CP::Vec2.new(@shape.body.p.x % WIDTH, @shape.body.p.y % HEIGHT)
+    @shape.body.p = l_position
   end
 end
