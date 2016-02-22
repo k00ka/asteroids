@@ -3,6 +3,7 @@
 ## Based on ChipmunkIntegration.rb by Dirk Johnson, MIT license
 
 require 'rubygems'
+require 'byebug'
 require 'gosu'
 require 'chipmunk'
 require_relative 'lib/game'

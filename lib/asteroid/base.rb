@@ -2,9 +2,6 @@
 
 module Asteroid
   class Base
-
-    @@images = []
-
     attr_reader :image, :shape, :body
 
     def initialize(shape: nil)
@@ -31,6 +28,16 @@ module Asteroid
     end
 
     protected
+    def self.random_asteroid_image
+      size = name.gsub(/^.*::/,"").downcase
+      @@asteroid_images ||= [
+        Gosu::Image.new("media/ast#{size}1.bmp"),
+        Gosu::Image.new("media/ast#{size}2.bmp"),
+        Gosu::Image.new("media/ast#{size}3.bmp"),
+        Gosu::Image.new("media/ast#{size}4.bmp")
+      ]
+      @@asteroid_images.sample
+    end
 
     def default_body
       CP::Body.new(0.0001, 0.0001)
@@ -41,10 +48,6 @@ module Asteroid
       CP::Shape::Circle.new(default_body, scaled_radius, CP::Vec2.new(0.0, 0.0)).tap do |s|
         s.collision_type = :asteroid
       end
-    end
-
-    def default_image
-      @@images.sample
     end
 
     def self.random_velocity
