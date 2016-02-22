@@ -6,12 +6,6 @@ require_relative 'asteroid/large'
 require_relative 'level'
 require_relative 'score'
 
-# The number of steps to process every Gosu update
-# The Player ship can get going so fast as to "move through" a
-# asteroid without triggering a collision; an increased number of
-# Chipmunk step calls per update will effectively avoid this issue
-SUBSTEPS = 6
-
 # The Gosu::Window is always the "environment" of our game
 # It also provides the pulse of our game
 class Game < Gosu::Window
@@ -71,8 +65,7 @@ class Game < Gosu::Window
     @split_asteroids = []
     @remove_shapes = []
     @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
-      asteroid = asteroid_shape.object
-      @split_asteroids << asteroid
+      @split_asteroids << asteroid_shape.object
     end
 
     # Here we tell Space that we don't want one asteroid bumping into another
@@ -85,36 +78,34 @@ class Game < Gosu::Window
   end
 
   def update
-    # Step the physics environment SUBSTEPS times each update
-    SUBSTEPS.times do
-      # for each asteroid collision
-      @split_asteroids.each do |asteroid|
-        @asteroids.delete(asteroid)
-        @asteroids += asteroid.split(@space)
-      end
-      @split_asteroids.clear
-      @asteroids.each(&:validate_position)
-
-      # Adjust player forces
-
-      # When a force or torque is set on a Body, it is cumulative
-      # This means that the force you applied last SUBSTEP will compound with the
-      # force applied this SUBSTEP; which is probably not the behavior you want
-      # We reset the forces on the Player each SUBSTEP for this reason
-      @player.shape.body.reset_forces
-      @player.validate_position
-      @player.apply_damping
-      @player.turn_none
-
-      # Check keyboard
-      @player.turn_right if Gosu::button_down?(Gosu::KbRight) && !Gosu::button_down?(Gosu::KbLeft)
-      @player.turn_left if Gosu::button_down?(Gosu::KbLeft) && !Gosu::button_down?(Gosu::KbRight)
-      @player.accelerate if Gosu::button_down?(Gosu::KbUp)
-
-      # Perform the step over @dt period of time
-      # For best performance @dt should remain consistent for the game
-      @space.step(@dt)
+    # for each asteroid collision
+    @split_asteroids.each do |asteroid|
+      @asteroids.delete(asteroid)
+      @asteroids += asteroid.split(@space)
+      @score.increment(asteroid.points)
     end
+    @split_asteroids.clear
+    @asteroids.each(&:validate_position)
+
+    # Adjust player forces
+
+    # When a force or torque is set on a Body, it is cumulative
+    # This means that the force you applied last SUBSTEP will compound with the
+    # force applied this SUBSTEP; which is probably not the behavior you want
+    # We reset the forces on the Player each SUBSTEP for this reason
+    @player.shape.body.reset_forces
+    @player.validate_position
+    @player.apply_damping
+    @player.turn_none
+
+    # Check keyboard
+    @player.turn_right if Gosu::button_down?(Gosu::KbRight) && !Gosu::button_down?(Gosu::KbLeft)
+    @player.turn_left if Gosu::button_down?(Gosu::KbLeft) && !Gosu::button_down?(Gosu::KbRight)
+    @player.accelerate if Gosu::button_down?(Gosu::KbUp)
+
+    # Perform the step over @dt period of time
+    # For best performance @dt should remain consistent for the game
+    @space.step(@dt)
 
     # Each update (not SUBSTEP) we see if we need to add more asteroids
     @level.next! if @level.complete?

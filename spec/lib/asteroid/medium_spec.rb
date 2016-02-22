@@ -1,7 +1,5 @@
 require "support/shared_examples/an_initialized_asteroid"
 
-require "asteroid/base"
-require "asteroid/small"
 require "asteroid/medium"
 
 RSpec.describe Asteroid::Medium do

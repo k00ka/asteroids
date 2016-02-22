@@ -31,7 +31,7 @@ class Player
 
   # Turn a constant speed cw
   def turn_right(rate = 6.0)
-    @shape.body.w = rate/SUBSTEPS
+    @shape.body.w = rate
   end
 
   # Turn a constant speed ccw
@@ -44,13 +44,11 @@ class Player
   end
 
   # Apply forward force; Chipmunk will do the rest
-  # SUBSTEPS is used as a divisor to keep acceleration rate constant
-  # even if the number of steps per update are adjusted
   # Here we must convert the angle (facing) of the body into
   # forward momentum by creating a vector in the direction of the facing
   # and with a magnitude representing the force we want to apply
   def accelerate(force = 3000.0)
-    @shape.body.apply_force((radians_to_vec2(@shape.body.a) * (force/SUBSTEPS)), CP::Vec2.new(0.0, 0.0))
+    @shape.body.apply_force((radians_to_vec2(@shape.body.a) * force), CP::Vec2.new(0.0, 0.0))
   end
 
   # Wrap to the other side of the screen when we fly off the edge

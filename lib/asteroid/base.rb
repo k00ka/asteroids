@@ -72,7 +72,7 @@ module Asteroid
     def self.random_velocity
       direction = (rand * 32).to_i * Math::PI / 16
       speed = 75 * (1 + (rand * 4).to_i / 3)
-      CP::Vec2.new(Math::cos(direction), Math::sin(direction)) * speed/SUBSTEPS
+      CP::Vec2.new(Math::cos(direction), Math::sin(direction)) * speed
     end
   end
 end
