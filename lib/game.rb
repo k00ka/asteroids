@@ -7,6 +7,7 @@ require_relative 'asteroid/large'
 require_relative 'asteroid/medium'
 require_relative 'asteroid/small'
 require_relative 'level'
+require_relative 'score'
 
 # The number of steps to process every Gosu update
 # The Player ship can get going so fast as to "move through" a
@@ -26,8 +27,7 @@ class Game < Gosu::Window
     @beep = Gosu::Sample.new("media/boom.wav")
 
     # Put the score here, as it is the environment that tracks this now
-    @score = 0
-    @font = Gosu::Font.new(70, name: "media/hyperspace.ttf")
+    @score = Score.new
 
     # Time increment over which to apply a physics "step" ("delta t")
     @dt = 1.0/60.0
@@ -75,7 +75,7 @@ class Game < Gosu::Window
     @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
       asteroid = asteroid_shape.object
 
-      @score += asteroid.points
+      @score.increment asteroid.points
       @beep.play
 
       @split_asteroids.concat(asteroid.chunks)
@@ -144,8 +144,8 @@ class Game < Gosu::Window
 
   def draw
     @player.draw
-    @asteroids.each { |asteroid| asteroid.draw }
-    @font.draw_rel(@score > 0 ? @score : "00", 200, 10, ZOrder::UI, 1.0, 0.0)
+    @asteroids.each(&:draw)
+    @score.draw_at(180, 5)
   end
 
   def button_down(id)
