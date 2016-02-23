@@ -8,7 +8,7 @@ class Level
   def initialize(space, asteroids)
     @space = space
     @asteroids = asteroids
-    @round = 1
+    @round = 0
   end
 
   def complete?
@@ -24,9 +24,8 @@ class Level
     end
   end
 
-  private
-
+private
   def asteroid_count
-    4 * @round
+    3 + @round
   end
 end

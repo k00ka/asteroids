@@ -1,39 +1,32 @@
 #Encoding: UTF-8
 
-class Player
+require_relative 'body'
+require_relative 'shot'
+
+class Player < Body
   @@ship_image = Gosu::Image.new("media/ship.bmp")
   @@thrust_image = Gosu::Image.new("media/shipthrust.bmp")
-  @@facing_upward =  3*Math::PI/2.0
-  @@zero_vector = CP::Vec2.new(0.0, 0.0)
+  @@dt = 1.0/60.0
 
-  def initialize
-    # In order to create a shape, we must first define it
-    # Chipmunk defines 3 types of Shapes: Segments, Circles and Polys
-    # We'll use a simple, 4 sided Poly for our Player (ship)
-    # You need to define the vectors so that the "top" of the Shape is towards 0 radians (the right)
-    shape_array = [CP::Vec2.new(-25.0, -25.0), CP::Vec2.new(-25.0, 25.0), CP::Vec2.new(25.0, 1.0), CP::Vec2.new(25.0, -1.0)]
-    @shape = CP::Shape::Poly.new(default_body, shape_array, @@zero_vector)
-
-    # The collision_type of a shape allows us to set up special collision behavior
-    # based on these types.  The actual value for the collision_type is arbitrary
-    # and, as long as it is consistent, will work for us; of course, it helps to have it make sense
-    @shape.collision_type = :ship
-
-    @shape.body do |body|
-      body.p = @@zero_vector # position
-      body.v = @@zero_vector # velocity
-      body.a = @@facing_upward
-    end
+  def initialize(shots)
+    super default_shape
+    @shots = shots
+    new_ship
   end
 
-  def add_to_space(space)
-    space.add_body(@shape.body)
-    space.add_shape(@shape)
+  def new_ship
+    self.position = dead_center
+    self.velocity = still
+    self.angle = facing_upward
+    @destroyed = false
   end
 
-  def remove_from_space(space)
-    space.remove_body(@shape.body)
-    space.remove_shape(@shape)
+  def destroyed!
+    @destroyed = true
+  end
+
+  def is_destroyed?
+    @destroyed
   end
 
   def accelerate_none
@@ -45,40 +38,52 @@ class Player
   end
 
   def apply_damping
-    @shape.body.update_velocity(@@zero_vector, 0.997, 1.0/60.0)
+    @shape.body.update_velocity(self.zero_gravity, 0.996, @@dt)
   end
 
   # Directly set the position of our Player
-  def warp(vect)
-    @shape.body.p = vect
+  def warp_to(position)
+    self.position = position
+  end
+
+  def starting_position
+    self.position = self.dead_center
   end
 
   # Turn a constant speed cw
   def turn_right(rate = 6.0)
-    @shape.body.w = rate
+    self.spin = rate
   end
 
   # Turn a constant speed ccw
   def turn_left(rate = 6.0)
-    turn_right(-rate)
+    self.spin = -rate
   end
 
   def turn_none
-    turn_right(0.0)
+    self.spin = 0.0
+  end
+
+  def shoot(space)
+    return if @shooting
+    Shot.new(self.position, self.angle).tap do |s|
+      @shots << s
+      s.add_to_space(space)
+    end
+    @shooting = true
+  end
+
+  def shoot_none
+    @shooting = false
   end
 
   # Apply forward force; Chipmunk will do the rest
   # Here we must convert the angle (facing) of the body into
   # forward momentum by creating a vector in the direction of the facing
   # and with a magnitude representing the force we want to apply
-  def accelerate(force = 3000.0)
-    @shape.body.apply_force((radians_to_vec2(@shape.body.a) * force), @@zero_vector)
+  def accelerate(force = 2000.0)
+    @shape.body.apply_force((radians_to_vec2(@shape.body.a) * force), self.zero_offset)
     @accelerating = true
-  end
-
-  # Wrap to the other side of the screen when we fly off the edge
-  def validate_position
-    @shape.body.p = CP::Vec2.new(@shape.body.p.x % WIDTH, @shape.body.p.y % HEIGHT)
   end
 
   def draw
@@ -94,5 +99,20 @@ private
 
   def default_body
     CP::Body.new(10.0, 150.0)
+  end
+
+  def default_shape
+    # In order to create a shape, we must first define it
+    # Chipmunk defines 3 types of Shapes: Segments, Circles and Polys
+    # We'll use a simple, 4 sided Poly for our Player (ship)
+    # You need to define the vectors so that the "top" of the Shape is towards 0 radians (the right)
+    shape_array = [CP::Vec2.new(-25.0, -25.0), CP::Vec2.new(-25.0, 25.0), CP::Vec2.new(25.0, 1.0), CP::Vec2.new(25.0, -1.0)]
+    CP::Shape::Poly.new(default_body, shape_array).tap do |s|
+      # The collision_type of a shape allows us to set up special collision behavior
+      # based on these types.  The actual value for the collision_type is arbitrary
+      # and, as long as it is consistent, will work for us; of course, it helps to have it make sense
+      s.collision_type = :ship
+      s.object = self
+    end
   end
 end

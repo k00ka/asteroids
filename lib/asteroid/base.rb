@@ -1,55 +1,34 @@
 #Encoding: UTF-8
 
+require_relative '../body'
+
 module Asteroid
-  class Base
+  class Base < Body
     attr_reader :image, :shape
     attr_writer :shape if defined? RSpec
 
     @@boom_sound = Gosu::Sample.new("media/boom.wav")
     @@white = Gosu::Color.new(0xff_ffffff)
-    @@facing_upward =  3*Math::PI/2.0
 
-    def initialize(position = CP::Vec2.new(rand * WIDTH, rand * HEIGHT))
+    # accept position, so that it can be set when an asteroid is split
+    def initialize(position = self.class.random_position)
+      super default_shape
+
+      self.position = position
+      self.velocity = self.class.random_velocity
+      self.angle = self.facing_upward
+
       @image = self.class.random_asteroid_image
-      @shape = shape || default_shape
-      @shape.object = self
-      @shape.body.tap do |body|
-        body.p = position
-        body.v = self.class.random_velocity
-        body.a = @@facing_upward
-      end
-    end
-
-    def validate_position
-      @shape.body.p = CP::Vec2.new(@shape.body.p.x % WIDTH, @shape.body.p.y % HEIGHT)
     end
 
     def split(space)
       @@boom_sound.play
-      remove_from_space(space)
-      chunks.each { |chunk| chunk.add_to_space(space) }
-    end
-
-    def add_to_space(space)
-      space.add_body(shape.body)
-      space.add_shape(shape)
-    end
-
-    def remove_from_space(space)
-      space.remove_body(shape.body)
-      space.remove_shape(shape)
+      remove_from_space(space) # remove the original piece
+      chunks.each { |chunk| chunk.add_to_space(space) } # add chunks, if any
     end
 
     def draw
-      #scaled_width = @image.width * scale / 2.0
-      #scaled_height = @image.height * scale / 2.0
-      #@image.draw(@shape.body.p.x - scaled_width, @shape.body.p.y - scaled_height, ZOrder::Asteroids, scale, scale, @color, :add)
-      @image.draw(@shape.body.p.x - @image.width / 2.0, @shape.body.p.y - @image.height / 2.0, ZOrder::Asteroids, 1, 1, @@white, :add)
-    end
-
-  protected
-    def position
-      @shape.body.p
+      @image.draw_rot(self.position.x, self.position.y, ZOrder::Asteroids, 0, 0.5, 0.5, 1, 1, @@white, :add)
     end
 
   private
@@ -64,21 +43,26 @@ module Asteroid
       @@asteroid_images.sample
     end
 
+    def self.random_position
+      CP::Vec2.new(rand * WIDTH, rand * HEIGHT)
+    end
+
+    def self.random_velocity
+      direction = (rand * 32).to_i * Math::PI / 16
+      speed = 75 + (1 + (rand * 4).to_i / 3)
+      calc_velocity(direction, speed)
+    end
+
     def default_body
-      CP::Body.new(0.0001, 0.0001)
+      CP::Body.new(10.0, 150.0)
     end
 
     def default_shape
       scaled_radius = 25.to_f / 2 * scale
       CP::Shape::Circle.new(default_body, scaled_radius, CP::Vec2.new(0.0, 0.0)).tap do |s|
         s.collision_type = :asteroid
+        s.object = self
       end
-    end
-
-    def self.random_velocity
-      direction = (rand * 32).to_i * Math::PI / 16
-      speed = 75 * (1 + (rand * 4).to_i / 3)
-      CP::Vec2.new(Math::cos(direction), Math::sin(direction)) * speed
     end
   end
 end
