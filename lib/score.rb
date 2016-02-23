@@ -1,3 +1,5 @@
+#Encoding: UTF-8
+
 class Score
   def initialize
     @score = 0

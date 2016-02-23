@@ -2,7 +2,7 @@
 
 module Asteroid
   class Base
-    attr_reader :image, :shape, :body
+    attr_reader :image, :shape
     attr_writer :shape if defined? RSpec
 
     @@boom_sound = Gosu::Sample.new("media/boom.wav")
@@ -13,10 +13,10 @@ module Asteroid
       @image = self.class.random_asteroid_image
       @shape = shape || default_shape
       @shape.object = self
-      @body = @shape.body.tap do |b|
-        b.p = position
-        b.v = self.class.random_velocity
-        b.a = @@facing_upward
+      @shape.body.tap do |body|
+        body.p = position
+        body.v = self.class.random_velocity
+        body.a = @@facing_upward
       end
     end
 
@@ -47,7 +47,12 @@ module Asteroid
       @image.draw(@shape.body.p.x - @image.width / 2.0, @shape.body.p.y - @image.height / 2.0, ZOrder::Asteroids, 1, 1, @@white, :add)
     end
 
-    protected
+  protected
+    def position
+      @shape.body.p
+    end
+
+  private
     def self.random_asteroid_image
       size = name.gsub(/^.*::/,"").downcase
       @@asteroid_images = [

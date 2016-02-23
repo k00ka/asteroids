@@ -7,7 +7,7 @@ module Asteroid
     end
 
     def chunks
-      [Small.new(body.p), Small.new(body.p)]
+      [Small.new(position), Small.new(position)]
     end
 
   private

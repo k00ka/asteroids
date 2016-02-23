@@ -30,40 +30,17 @@ class Game < Gosu::Window
     # the feel I'd like in this situation
     @space = CP::Space.new
 
-    # Create the Body for the Player
-    body = CP::Body.new(10.0, 150.0)
-
-    # In order to create a shape, we must first define it
-    # Chipmunk defines 3 types of Shapes: Segments, Circles and Polys
-    # We'll use a simple, 4 sided Poly for our Player (ship)
-    # You need to define the vectors so that the "top" of the Shape is towards 0 radians (the right)
-    shape_array = [CP::Vec2.new(-25.0, -25.0), CP::Vec2.new(-25.0, 25.0), CP::Vec2.new(25.0, 1.0), CP::Vec2.new(25.0, -1.0)]
-    shape = CP::Shape::Poly.new(body, shape_array, CP::Vec2.new(0,0))
-
-    # The collision_type of a shape allows us to set up special collision behavior
-    # based on these types.  The actual value for the collision_type is arbitrary
-    # and, as long as it is consistent, will work for us; of course, it helps to have it make sense
-    shape.collision_type = :ship
-
-    @space.add_body(body)
-    @space.add_shape(shape)
-
-    @player = Player.new(shape)
+    @player = Player.new
+    @player.add_to_space(@space)
     @player.warp(CP::Vec2.new(WIDTH/2, HEIGHT/2)) # move to the center of the window
 
     @asteroids = Array.new
     @level = Level.new(@space, @asteroids)
 
     # Here we define what is supposed to happen when a Player (ship) collides with a asteroid
-    # I create a @remove_shapes array because we cannot remove either Shapes or Bodies
-    # from Space within a collision closure, rather, we have to wait till the closure
-    # is through executing, then we can remove the Shapes and Bodies
-    # In this case, the Shapes and the Bodies they own are removed in the Gosu::Window.update phase
-    # by iterating over the @remove_shapes array
-    # Also note that both Shapes involved in the collision are passed into the closure
+    # Also note that both shapes involved in the collision are passed into the closure
     # in the same order that their collision_types are defined in the add_collision_func call
     @split_asteroids = []
-    @remove_shapes = []
     @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
       @split_asteroids << asteroid_shape.object
     end
@@ -93,15 +70,19 @@ class Game < Gosu::Window
     # This means that the force you applied last SUBSTEP will compound with the
     # force applied this SUBSTEP; which is probably not the behavior you want
     # We reset the forces on the Player each SUBSTEP for this reason
-    @player.shape.body.reset_forces
-    @player.validate_position
-    @player.apply_damping
-    @player.turn_none
+    @player.reset_forces
 
-    # Check keyboard
+    # Acceleration/deceleration
+    @player.accelerate_none
+    @player.apply_damping
+    @player.accelerate if Gosu::button_down?(Gosu::KbUp)
+
+    # Torque
+    @player.turn_none
     @player.turn_right if Gosu::button_down?(Gosu::KbRight) && !Gosu::button_down?(Gosu::KbLeft)
     @player.turn_left if Gosu::button_down?(Gosu::KbLeft) && !Gosu::button_down?(Gosu::KbRight)
-    @player.accelerate if Gosu::button_down?(Gosu::KbUp)
+
+    @player.validate_position
 
     # Perform the step over @dt period of time
     # For best performance @dt should remain consistent for the game

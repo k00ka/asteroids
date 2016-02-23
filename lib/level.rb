@@ -1,9 +1,14 @@
+#Encoding: UTF-8
+
+require_relative 'asteroid/large'
+
 class Level
   attr_reader :asteroids
 
   def initialize(space, asteroids)
     @space = space
     @asteroids = asteroids
+    @round = 1
   end
 
   def complete?
@@ -11,19 +16,17 @@ class Level
   end
 
   def next!
-    new_asteroids.times do
+    @round += 1
+    asteroid_count.times do
       asteroid = Asteroid::Large.new
-
-      @space.add_body(asteroid.body)
-      @space.add_shape(asteroid.shape)
-
+      asteroid.add_to_space(@space)
       @asteroids << asteroid
     end
   end
 
   private
 
-  def new_asteroids
-    4
+  def asteroid_count
+    4 * @round
   end
 end
