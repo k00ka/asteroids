@@ -8,8 +8,13 @@ class Player < Body
   @@thrust_image = Gosu::Image.new("media/shipthrust.bmp")
   @@dt = 1.0/60.0
 
-  def initialize(shots)
-    super default_shape
+  @@facing_upward =  3*Math::PI/2.0
+  @@zero_vector = CP::Vec2.new(0.0, 0.0)
+
+  @@invulnerable_time = 1500 # ms
+
+  def initialize(shots, shape = default_shape)
+    super shape
     @shots = shots
     new_ship
   end
@@ -19,6 +24,8 @@ class Player < Body
     self.velocity = still
     self.angle = facing_upward
     @destroyed = false
+    @spawned_at = Gosu.milliseconds
+    @accelerated_at = nil
   end
 
   def destroyed!
@@ -29,8 +36,24 @@ class Player < Body
     @destroyed
   end
 
+  if defined? RSpec
+    def body
+      @shape.body
+    end
+  end
+
+  def invulnerable?
+    invulnerability_left > 0
+  end
+
+  def add_to_space(space)
+    space.add_body(@shape.body)
+    space.add_shape(@shape)
+  end
+
   def accelerate_none
     @accelerating = false
+    @accelerated_at = nil
   end
 
   def reset_forces
@@ -84,11 +107,19 @@ class Player < Body
   def accelerate(force = 2000.0)
     @shape.body.apply_force((radians_to_vec2(@shape.body.a) * force), self.zero_offset)
     @accelerating = true
+    @accelerated_at ||= Gosu.milliseconds
   end
 
   def draw
-    image = @accelerating ? @@thrust_image : @@ship_image
-    image.draw_rot(@shape.body.p.x, @shape.body.p.y, ZOrder::Player, @shape.body.a.radians_to_gosu)
+    # simulate blinking when invulnerable
+    blink_speed = 100
+    white = 0xff_ffffff
+    black = 0x00_000000
+
+    color = invulnerable? ? blink(invulnerability_left, on: white, off: black) : white
+    image = @accelerating ? blink(time_accelerating, on: @@thrust_image, off: @@ship_image) : @@ship_image
+
+    image.draw_rot(@shape.body.p.x, @shape.body.p.y, ZOrder::Player, @shape.body.a.radians_to_gosu, 0.5, 0.5, 1, 1, color)
   end
 
 private
@@ -114,5 +145,20 @@ private
       s.collision_type = :ship
       s.object = self
     end
+  end
+
+  def invulnerability_left
+    [
+      @spawned_at + @@invulnerable_time - Gosu.milliseconds,
+      0
+    ].max
+  end
+
+  def time_accelerating
+    Gosu.milliseconds - @accelerated_at
+  end
+
+  def blink(time_remaining, on:, off:, blink_speed: 100)
+    time_remaining.div(blink_speed).even? ? on : off
   end
 end

@@ -1,1 +1,1 @@
-FakeShape = Struct.new :body, :object
+FakeShape = Struct.new :body, :object, :collision_type
