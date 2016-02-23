@@ -85,16 +85,17 @@ class Game < Gosu::Window
     @shots.each(&:validate_position)
 
     # Player
-    # When a force or torque is set on a body, it is cumulative
-    # This means that the force you applied last SUBSTEP will compound with the
-    # force applied this SUBSTEP; which is probably not the behavior you want
-    # We reset the forces on the Player each SUBSTEP for this reason
-    @player.reset_forces
     if @player.is_destroyed?
       close if @dock.empty?
       @dock.fetch_ship
       @player.new_ship
     end
+
+    # When a force or torque is set on a body, it is cumulative
+    # This means that the force you applied last SUBSTEP will compound with the
+    # force applied this SUBSTEP; which is probably not the behavior you want
+    # We reset the forces on the Player each SUBSTEP for this reason
+    @player.reset_forces
 
     # Acceleration/deceleration
     @player.apply_damping
@@ -106,6 +107,8 @@ class Game < Gosu::Window
     @player.turn_left if Gosu::button_down?(Gosu::KbLeft) && !Gosu::button_down?(Gosu::KbRight)
 
     Gosu::button_down?(Gosu::KbSpace) ? @player.shoot(@space) : @player.shoot_none
+
+    @player.hyperspace if Gosu::button_down?(Gosu::KbLeftShift) || Gosu::button_down?(Gosu::KbRightShift)
 
     @player.validate_position
 

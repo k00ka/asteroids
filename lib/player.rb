@@ -75,6 +75,12 @@ class Player < Body
     self.position = self.dead_center
   end
 
+  def hyperspace
+    reset_forces
+    self.velocity = self.still
+    self.position = self.class.random_position
+  end
+
   # Turn a constant speed cw
   def turn_right(rate = 6.0)
     self.spin = rate

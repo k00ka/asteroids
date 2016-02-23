@@ -45,10 +45,6 @@ module Asteroid
       @@asteroid_images.sample
     end
 
-    def self.random_position
-      CP::Vec2.new(rand * WIDTH, rand * HEIGHT)
-    end
-
     def self.random_velocity
       direction = (rand * 32).to_i * Math::PI / 16
       speed = 75 + (1 + (rand * 4).to_i / 3)

@@ -61,6 +61,10 @@ protected
     CP::Vec2.new(WIDTH/2, HEIGHT/2)
   end
 
+  def self.random_position
+    CP::Vec2.new(rand * WIDTH, rand * HEIGHT)
+  end
+
   # zero velocity
   def still
     CP::Vec2.new(0.0, 0.0)
