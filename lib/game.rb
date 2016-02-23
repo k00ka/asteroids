@@ -52,8 +52,10 @@ class Game < Gosu::Window
     end
 
     @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
-      @split_asteroids << asteroid_shape.object
-      @player.destroyed!
+      unless ship_shape.object.invulnerable?
+        @split_asteroids << asteroid_shape.object
+        @player.destroyed!
+      end
     end
 
     # Here we tell Space that we don't want one asteroid bumping into another
@@ -94,7 +96,7 @@ class Game < Gosu::Window
     @player.turn_right if Gosu::button_down?(Gosu::KbRight) && !Gosu::button_down?(Gosu::KbLeft)
     @player.turn_left if Gosu::button_down?(Gosu::KbLeft) && !Gosu::button_down?(Gosu::KbRight)
 
-    Gosu::button_down?(Gosu::KbSpace) ? @player.shoot(@space) : @player.shoot_none 
+    Gosu::button_down?(Gosu::KbSpace) ? @player.shoot(@space) : @player.shoot_none
 
     @player.validate_position
 
