@@ -5,6 +5,7 @@
 require_relative 'player'
 require_relative 'asteroid/large'
 require_relative 'level'
+require_relative 'dock'
 require_relative 'score'
 require_relative 'zorder'
 
@@ -41,6 +42,7 @@ class Game < Gosu::Window
     @level = Level.new(@space, @asteroids)
     @step = 0
 
+    @dock = Dock.new(3)
     @player.add_to_space(@space)
 
     # Here we define what is supposed to happen when things collide
@@ -88,7 +90,11 @@ class Game < Gosu::Window
     # force applied this SUBSTEP; which is probably not the behavior you want
     # We reset the forces on the Player each SUBSTEP for this reason
     @player.reset_forces
-    @player.new_ship if @player.is_destroyed?
+    if @player.is_destroyed?
+      close if @dock.empty?
+      @dock.fetch_ship
+      @player.new_ship
+    end
 
     # Acceleration/deceleration
     @player.apply_damping
@@ -128,6 +134,7 @@ class Game < Gosu::Window
     @asteroids.each(&:draw)
     @shots.each(&:draw)
     @score.draw_at(180, 5)
+    @dock.draw_at(160, 75)
   end
 
   def button_down(id)
