@@ -25,6 +25,7 @@ class Player < Body
     self.angle = facing_upward
     @destroyed = false
     @spawned_at = Gosu.milliseconds
+    @accelerated_at = nil
   end
 
   def destroyed!
@@ -52,6 +53,7 @@ class Player < Body
 
   def accelerate_none
     @accelerating = false
+    @accelerated_at = nil
   end
 
   def reset_forces
@@ -105,15 +107,17 @@ class Player < Body
   def accelerate(force = 2000.0)
     @shape.body.apply_force((radians_to_vec2(@shape.body.a) * force), self.zero_offset)
     @accelerating = true
+    @accelerated_at ||= Gosu.milliseconds
   end
 
   def draw
-    image = @accelerating ? @@thrust_image : @@ship_image
-
     # simulate blinking when invulnerable
     blink_speed = 100
     white = 0xff_ffffff
-    color = invulnerable? ? invulnerable_color(blink_speed, default: white) : white
+    black = 0x00_000000
+
+    color = invulnerable? ? blink(invulnerability_left, on: white, off: black) : white
+    image = @accelerating ? blink(time_accelerating, on: @@thrust_image, off: @@ship_image) : @@ship_image
 
     image.draw_rot(@shape.body.p.x, @shape.body.p.y, ZOrder::Player, @shape.body.a.radians_to_gosu, 0.5, 0.5, 1, 1, color)
   end
@@ -150,7 +154,11 @@ private
     ].max
   end
 
-  def invulnerable_color(blink_speed, default: 0xff_ffffff, blink_color: 0x00_000000)
-    invulnerability_left.div(blink_speed).even? ? blink_color : default
+  def time_accelerating
+    Gosu.milliseconds - @accelerated_at
+  end
+
+  def blink(time_remaining, on:, off:, blink_speed: 100)
+    time_remaining.div(blink_speed).even? ? on : off
   end
 end

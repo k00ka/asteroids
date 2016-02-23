@@ -86,9 +86,8 @@ class Game < Gosu::Window
     @player.new_ship if @player.is_destroyed?
 
     # Acceleration/deceleration
-    @player.accelerate_none
     @player.apply_damping
-    @player.accelerate if Gosu::button_down?(Gosu::KbUp)
+    Gosu::button_down?(Gosu::KbUp) ? @player.accelerate : @player.accelerate_none
 
     # Turning
     @player.turn_none
