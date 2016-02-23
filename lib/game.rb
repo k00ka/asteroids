@@ -19,8 +19,8 @@ class Game < Gosu::Window
     self.caption = "Ruby Hack Night Asteroids"
 
     # Put the beep here, as it is the environment now that determines collision
-    @high = Gosu::Sample.new("media/high.wav")
-    @low = Gosu::Sample.new("media/low.wav")
+    @high_sound = Gosu::Sample.new("media/high.wav")
+    @low_sound = Gosu::Sample.new("media/low.wav")
 
     @score = Score.new
 
@@ -37,6 +37,7 @@ class Game < Gosu::Window
 
     #
     @level = Level.new(@space, @asteroids)
+    @step = 0
 
     @player.add_to_space(@space)
 
@@ -113,6 +114,8 @@ class Game < Gosu::Window
     # For best performance @dt should remain consistent for the game
     @space.step(@@dt)
 
+    conditionally_play_doop
+
     # See if we need to add more asteroids...
     @level.next! if @level.complete?
   end
@@ -126,5 +129,15 @@ class Game < Gosu::Window
 
   def button_down(id)
     close if id == Gosu::KbEscape
+  end
+
+  def conditionally_play_doop
+    @step += 1
+    doop_delay = @asteroids.inject(0) { |s,a| s + a.scale } * 4
+    if @step > doop_delay
+      @doop_sound = (@doop_sound == @high_sound) ? @low_sound : @high_sound
+      @doop_sound.play
+      @step = 0
+    end
   end
 end

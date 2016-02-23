@@ -10,7 +10,6 @@ module Asteroid
       [Small.new(position), Small.new(position)]
     end
 
-  private
     def scale
       2
     end

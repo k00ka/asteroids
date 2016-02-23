@@ -10,7 +10,6 @@ module Asteroid
       [Medium.new(position), Medium.new(position)]
     end
 
-  private
     def scale
       4
     end

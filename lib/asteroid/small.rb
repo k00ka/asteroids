@@ -10,7 +10,6 @@ module Asteroid
       []
     end
 
-  private
     def scale
       1
     end
