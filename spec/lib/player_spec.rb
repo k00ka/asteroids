@@ -20,14 +20,20 @@ RSpec.describe Player do
 
       it { is_expected.to be_invulnerable }
 
-      it "is invulnerable up to 500ms" do
-        advance_time(500)
-        expect(subject).to be_invulnerable
-      end
+      context "with 500ms of invulnerability" do
+        before do
+          described_class.class_variable_set(:@@invulnerable_time, 500)
+        end
 
-      it "is vulnerable after 500ms" do
-        advance_time(501)
-        expect(subject).not_to be_invulnerable
+        it "is invulnerable before 500ms" do
+          advance_time(499)
+          expect(subject).to be_invulnerable
+        end
+
+        it "is vulnerable on or after 500ms" do
+          advance_time(500)
+          expect(subject).not_to be_invulnerable
+        end
       end
     end
   end

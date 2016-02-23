@@ -11,7 +11,7 @@ class Player < Body
   @@facing_upward =  3*Math::PI/2.0
   @@zero_vector = CP::Vec2.new(0.0, 0.0)
 
-  INVULNERABLE_TIME = 2000 # ms
+  @@invulnerable_time = 1500 # ms
 
   def initialize(shots, shape = default_shape)
     super shape
@@ -42,7 +42,7 @@ class Player < Body
   end
 
   def invulnerable?
-    invulnerability_left <= INVULNERABLE_TIME
+    invulnerability_left > 0
   end
 
   def add_to_space(space)
@@ -144,7 +144,10 @@ private
   end
 
   def invulnerability_left
-    Gosu.milliseconds - @spawned_at
+    [
+      @spawned_at + @@invulnerable_time - Gosu.milliseconds,
+      0
+    ].max
   end
 
   def invulnerable_color(blink_speed, default: 0xff_ffffff, blink_color: 0x00_000000)
