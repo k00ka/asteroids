@@ -11,6 +11,8 @@ class Player < Body
   @@facing_upward =  3*Math::PI/2.0
   @@zero_vector = CP::Vec2.new(0.0, 0.0)
 
+  INVULNERABLE_TIME = 2000 # ms
+
   def initialize(shots, shape = default_shape)
     super shape
     @shots = shots
@@ -40,7 +42,7 @@ class Player < Body
   end
 
   def invulnerable?
-    Gosu.milliseconds - @spawned_at <= 500
+    invulnerability_left <= INVULNERABLE_TIME
   end
 
   def add_to_space(space)
@@ -107,7 +109,13 @@ class Player < Body
 
   def draw
     image = @accelerating ? @@thrust_image : @@ship_image
-    image.draw_rot(@shape.body.p.x, @shape.body.p.y, ZOrder::Player, @shape.body.a.radians_to_gosu)
+
+    # simulate blinking when invulnerable
+    blink_speed = 100
+    white = 0xff_ffffff
+    color = invulnerable? ? invulnerable_color(blink_speed, default: white) : white
+
+    image.draw_rot(@shape.body.p.x, @shape.body.p.y, ZOrder::Player, @shape.body.a.radians_to_gosu, 0.5, 0.5, 1, 1, color)
   end
 
 private
@@ -133,5 +141,13 @@ private
       s.collision_type = :ship
       s.object = self
     end
+  end
+
+  def invulnerability_left
+    Gosu.milliseconds - @spawned_at
+  end
+
+  def invulnerable_color(blink_speed, default: 0xff_ffffff, blink_color: 0x00_000000)
+    invulnerability_left.div(blink_speed).even? ? blink_color : default
   end
 end
