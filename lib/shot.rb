@@ -7,7 +7,7 @@ require_relative 'body'
 class Shot < Body
   @@image = Gosu::Image.new("media/shot.bmp")
   @@sound = Gosu::Sample.new("media/shot.wav")
-  @@speed = 800.0
+  @@speed = 600.0
   @@old_age = 40
 
   # current player position and angle
