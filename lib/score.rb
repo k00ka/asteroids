@@ -10,6 +10,12 @@ class Score
 
   def increment(points)
     @score += points
+    free_ship?(points)
+  end
+
+  def free_ship?(points)
+    # did we just pass 10k?
+    (@score - points).div(10000) != @score.div(10000)
   end
 
   # draw the score leftward from top-right

@@ -113,7 +113,8 @@ class Game < Gosu::Window
     @split_asteroids.each do |asteroid|
       @asteroids.delete(asteroid)
       @asteroids.concat(asteroid.split(@space))
-      @score.increment(asteroid.points)
+      free_ship = @score.increment(asteroid.points)
+      @dock.free_ship if free_ship
     end
     @split_asteroids.clear
 
