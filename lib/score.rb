@@ -3,7 +3,7 @@
 class Score
   def initialize
     @score = 0
-    @font = Gosu::Font.new(70, name: "media/hyperspace.ttf")
+    @font = Gosu::Font.new(70, name: "media/Hyperspace.ttf")
   end
 
   def increment(points)
