@@ -9,8 +9,31 @@ RSpec.describe Player do
     let(:position) { CP::Vec2.new(400, 300) }
     let(:body) { FakeBody.new(position) }
     let(:shape) { FakeShape.new(body) }
-    subject { Player.new(shape) }
+    subject { Player.new(double("shots"), shape) }
 
     let(:update_position) { subject.validate_position }
   end
+
+  describe "#invulnerable?" do
+    context "when new" do
+      let!(:subject) { described_class.new(double("shots")) }
+
+      it { is_expected.to be_invulnerable }
+
+      it "is invulnerable up to 500ms" do
+        advance_time(500)
+        expect(subject).to be_invulnerable
+      end
+
+      it "is vulnerable after 500ms" do
+        advance_time(501)
+        expect(subject).not_to be_invulnerable
+      end
+    end
+  end
+end
+
+def advance_time(ms)
+  time = Gosu.milliseconds
+  allow(Gosu).to receive(:milliseconds) { time + ms }
 end

@@ -22,6 +22,7 @@ class Player < Body
     self.velocity = still
     self.angle = facing_upward
     @destroyed = false
+    @spawned_at = Gosu.milliseconds
   end
 
   def destroyed!
@@ -36,6 +37,10 @@ class Player < Body
     def body
       @shape.body
     end
+  end
+
+  def invulnerable?
+    Gosu.milliseconds - @spawned_at <= 500
   end
 
   def add_to_space(space)
