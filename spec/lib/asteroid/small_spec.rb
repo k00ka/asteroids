@@ -1,5 +1,8 @@
-require "support/shared_examples/an_initialized_asteroid"
+# Encoding: UTF-8
 
+# Ruby Hack Night Asteroids by David Andrews and Jason Schweier, 2016
+
+require "support/shared_examples/an_initialized_asteroid"
 require "asteroid/small"
 
 RSpec.describe Asteroid::Small do

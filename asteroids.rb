@@ -1,6 +1,8 @@
 # Encoding: UTF-8
 
-## Based on ChipmunkIntegration.rb by Dirk Johnson, MIT license
+# Ruby Hack Night Asteroids by David Andrews and Jason Schweier, 2016
+# Contact the authors at david (at) ryatta.com and jason.schweier (at) gmail.com
+# Based loosely on ChipmunkIntegration.rb by Dirk Johnson, MIT license
 
 require 'rubygems'
 require 'byebug'

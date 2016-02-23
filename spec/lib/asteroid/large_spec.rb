@@ -1,6 +1,9 @@
+# Encoding: UTF-8
+
+# Ruby Hack Night Asteroids by David Andrews and Jason Schweier, 2016
+
 require "support/shared_examples/an_initialized_asteroid"
 require "support/shared_examples/it_moves_on_the_boundary_of_a_ball"
-
 require "asteroid/large"
 
 RSpec.describe Asteroid::Large do
