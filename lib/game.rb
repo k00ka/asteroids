@@ -134,8 +134,8 @@ class Game < Gosu::Window
     @player.draw
     @asteroids.each(&:draw)
     @shots.each(&:draw)
-    @score.draw_at(180, 5)
-    @dock.draw_at(160, 75)
+    @score.draw_at(180, 0)
+    @dock.draw_at(100, 70)
   end
 
   def button_down(id)
