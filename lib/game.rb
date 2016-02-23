@@ -103,7 +103,7 @@ class Game < Gosu::Window
     # Asteroids
     @split_asteroids.each do |asteroid|
       @asteroids.delete(asteroid)
-      @asteroids += asteroid.split(@space)
+      @asteroids.concat(asteroid.split(@space))
       @score.increment(asteroid.points)
     end
     @split_asteroids.clear
