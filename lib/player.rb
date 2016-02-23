@@ -8,8 +8,11 @@ class Player < Body
   @@thrust_image = Gosu::Image.new("media/shipthrust.bmp")
   @@dt = 1.0/60.0
 
-  def initialize(shots)
-    super default_shape
+  @@facing_upward =  3*Math::PI/2.0
+  @@zero_vector = CP::Vec2.new(0.0, 0.0)
+
+  def initialize(shots, shape = default_shape)
+    super shape
     @shots = shots
     new_ship
   end
@@ -27,6 +30,17 @@ class Player < Body
 
   def is_destroyed?
     @destroyed
+  end
+
+  if defined? RSpec
+    def body
+      @shape.body
+    end
+  end
+
+  def add_to_space(space)
+    space.add_body(@shape.body)
+    space.add_shape(@shape)
   end
 
   def accelerate_none
