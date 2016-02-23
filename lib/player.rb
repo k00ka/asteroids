@@ -96,7 +96,7 @@ class Player < Body
   end
 
   def shoot(space)
-    return if @shooting
+    return if @shooting || @shots.length > 3
     Shot.new(self.position, self.angle).tap do |s|
       @shots << s
       s.add_to_space(space)
