@@ -10,6 +10,8 @@ class Shot < Body
   @@speed = 600.0
   @@old_age = 50
 
+  attr_accessor :shooter
+
   # current player position and angle
   def initialize(position, angle)
     super default_shape
@@ -18,7 +20,7 @@ class Shot < Body
     self.velocity = self.class.calc_velocity(angle, @@speed)
 
     @age = 0
-    @@sound.play   
+    @@sound.play
   end
 
   def draw
