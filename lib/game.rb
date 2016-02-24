@@ -2,9 +2,10 @@
 
 # Ruby Hack Night Asteroids by David Andrews and Jason Schweier, 2016
 
-require_relative 'player'
 require_relative 'asteroid/large'
+require_relative 'player'
 require_relative 'level'
+require_relative 'alien'
 require_relative 'dock'
 require_relative 'score'
 require_relative 'zorder'
@@ -21,24 +22,21 @@ class Game < Gosu::Window
 
     self.caption = "Ruby Hack Night Asteroids"
 
-    # Create our Space and set its damping
-    # A damping of 0.8 causes the ship bleed off its force and torque over time
-    # This is not realistic behavior in a vacuum of space, but it gives the game
-    # the feel I'd like in this situation
+    # Create our Space
     @space = CP::Space.new
 
-    # Our space contains three types of things...
-    @shots = Array.new
-    @player = Player.new(@shots, @@dt)
+    # Our space contains four types of things
     @asteroids = Array.new
+    @shots = Array.new # this includes both player's and alien's
+    @player = Player.new(@shots, @@dt)
+    @alien = Alien.new(@shots)
 
-    #
+    # Game progress indicators
     @level = Level.new(@space, @asteroids)
     @score = Score.new
+    @dock = Dock.new(3) # this is our display of ships below the score
 
-    @dock = Dock.new(3)
-    @player.add_to_space(@space)
-
+    # COLLISIONS
     # Here we define what is supposed to happen when things collide
     # Also note that both shapes involved in the collision are passed into the closure
     # in the same order that their collision_types are defined in the add_collision_func call
@@ -46,19 +44,31 @@ class Game < Gosu::Window
     @dead_shots = []
 
     @space.add_collision_func(:shot, :asteroid) do |shot_shape, asteroid_shape|
-      @split_asteroids << asteroid_shape.object
       @dead_shots << shot_shape.object
-    end
-
-    @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
-      next if ship_shape.object.invulnerable?
       @split_asteroids << asteroid_shape.object
-      @player.destroyed!
     end
 
     @space.add_collision_func(:shot, :ship) do |shot_shape, ship_shape|
       next if ship_shape.object.invulnerable?
+      @dead_shots << shot_shape.object
       @player.destroyed!
+    end
+
+    @space.add_collision_func(:shot, :alien) do |shot_shape, alien_shape|
+      @dead_shots << shot_shape.object
+      @alien.destroyed!
+    end
+
+    @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
+      next if ship_shape.object.invulnerable?
+      @player.destroyed!
+      @split_asteroids << asteroid_shape.object
+    end
+
+    @space.add_collision_func(:ship, :alien) do |ship_shape, alien_shape|
+      next if ship_shape.object.invulnerable?
+      @player.destroyed!
+      @alien.destroyed!
     end
 
     # Here we tell Space that we don't want one asteroid bumping into another
@@ -68,13 +78,20 @@ class Game < Gosu::Window
     # To see the effect, remove this line and play the game, every once in a while
     # you'll see an asteroid moving
     @space.add_collision_func(:asteroid, :asteroid, &nil)
+    @space.add_collision_func(:shot, :shot, &nil)
+    @space.add_collision_func(:ship, :ship, &nil) # for two player? ;)
 
+    # SOUNDS
     @high_doop = Gosu::Sample.new("media/high.wav")
     @low_doop = Gosu::Sample.new("media/low.wav")
     @free_ship_sound = Gosu::Sample.new("media/freeship.wav")
+
+    # Ready...set...play!
+    @player.add_to_space(@space)
   end
 
   def update
+    # Step 
     # Perform the step over @dt period of time
     # For best performance @dt should remain consistent for the game
     @space.step(@@dt)
