@@ -2,8 +2,8 @@
 
 # Ruby Hack Night Asteroids by David Andrews and Jason Schweier, 2016
 
-WIDTH = 800
-HEIGHT = 600
+WIDTH = 800 unless defined? WIDTH
+HEIGHT = 600 unless defined? HEIGHT
 
 RSpec.shared_examples "an initialized asteroid" do
   describe ".new" do

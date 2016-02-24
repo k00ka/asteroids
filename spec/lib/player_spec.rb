@@ -4,10 +4,13 @@
 
 require "player"
 
+WIDTH = 800 unless defined? WIDTH
+HEIGHT = 600 unless defined? HEIGHT
+
 RSpec.describe Player do
   describe "#invulnerable?" do
     context "when new" do
-      let!(:subject) { described_class.new(double("shots")) }
+      let!(:subject) { described_class.new(double("shots"), double("dt")) }
 
       it { is_expected.to be_invulnerable }
 
