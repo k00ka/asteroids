@@ -10,6 +10,7 @@ class Player < Body
 
   @@ship_image = Gosu::Image.new("media/ship.bmp")
   @@thrust_image = Gosu::Image.new("media/shipthrust.bmp")
+  @@thrust_sample = Gosu::Sample.new("media/thrust.wav").play(1, 1, true)
   @@dt = 1.0/60.0
 
   @@facing_upward =  3*Math::PI/2.0
@@ -42,10 +43,6 @@ class Player < Body
   def add_to_space(space)
     space.add_body(@shape.body)
     space.add_shape(@shape)
-  end
-
-  def accelerate_none
-    @accelerating = false
   end
 
   def reset_forces
@@ -105,6 +102,12 @@ class Player < Body
   def accelerate(force = 2000.0)
     @shape.body.apply_force((self.class.radians_to_vec2(@shape.body.a) * force), self.zero_offset)
     @accelerating = true
+    @@thrust_sample.resume unless @@thrust_sample.playing?
+  end
+
+  def accelerate_none
+    @accelerating = false
+    @@thrust_sample.pause if @@thrust_sample.playing?
   end
 
   def draw
@@ -116,7 +119,7 @@ class Player < Body
     color = invulnerable? ? blink(Gosu.milliseconds, on: white, off: black) : white
     image = @accelerating ? blink(Gosu.milliseconds, on: @@thrust_image, off: @@ship_image) : @@ship_image
 
-    image.draw_rot(@shape.body.p.x, @shape.body.p.y, ZOrder::Player, @shape.body.a.radians_to_gosu, 0.5, 0.5, 1, 1, color)
+    image.draw_rot(self.position.x, self.position.y, ZOrder::Player, self.angle.radians_to_gosu, 0.5, 0.5, 1, 1, color)
   end
 
 private
