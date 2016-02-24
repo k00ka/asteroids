@@ -209,12 +209,13 @@ private
   end
 
   def conditionally_send_alien
-    @last_alien_time ||= Gosu.milliseconds
-    return unless @last_alien_time + @level.time_between_aliens < Gosu.milliseconds
-    alien = Alien.new(@shots)
-    @aliens << alien
-    alien.add_to_space(@space)
-    @last_alien_time = Gosu.milliseconds
+    return unless @level.new_alien?
+
+    Alien.new(@shots).tap do |alien|
+      @aliens << alien
+      alien.add_to_space(@space)
+    end
+    @level.alien_added!
     Alien.start_sound
   end
 

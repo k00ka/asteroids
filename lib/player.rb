@@ -75,10 +75,11 @@ class Player < Body
   end
 
   def shoot(space)
-    return if @shooting || @shots.length > 3
+    return if @shooting || shots_taken > 3
     Shot.new(location_of_gun, angle).tap do |s|
       @shots << s
       s.add_to_space(space)
+      s.shooter = self
     end
     @shooting = true
   end
@@ -129,6 +130,10 @@ class Player < Body
 private
   def default_body
     CP::Body.new(10.0, 150.0)
+  end
+
+  def shots_taken
+    @shots.count { |shot| shot.shooter.is_a? self.class }
   end
 
   def default_shape

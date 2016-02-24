@@ -49,6 +49,7 @@ class Alien < Body
     Shot.new(location_of_gun, angle).tap do |s|
       @shots << s
       s.add_to_space(space)
+      s.shooter = self
     end
     @last_shot_time = Gosu.milliseconds
   end
