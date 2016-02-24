@@ -21,8 +21,6 @@ class Game < Gosu::Window
 
     self.caption = "Ruby Hack Night Asteroids"
 
-    @score = Score.new
-
     # Create our Space and set its damping
     # A damping of 0.8 causes the ship bleed off its force and torque over time
     # This is not realistic behavior in a vacuum of space, but it gives the game
@@ -36,7 +34,7 @@ class Game < Gosu::Window
 
     #
     @level = Level.new(@space, @asteroids)
-    @step = 0
+    @score = Score.new
 
     @dock = Dock.new(3)
     @player.add_to_space(@space)
@@ -153,12 +151,12 @@ class Game < Gosu::Window
 
 private
   def conditionally_play_doop
-    @step += 1
-    doop_delay = @asteroids.inject(1) { |s,a| s + a.scale } * 4
-    if @step > doop_delay
+    @last_doop_time ||= Gosu.milliseconds
+    doop_delay = @asteroids.inject(1) { |s,a| s + a.scale } * 80
+    if @last_doop_time + doop_delay < Gosu.milliseconds
       @doop_sound = (@doop_sound == @high_doop) ? @low_doop : @high_doop
       @doop_sound.play
-      @step = 0
+      @last_doop_time = Gosu.milliseconds
     end
   end
 
