@@ -6,6 +6,8 @@ require_relative 'body'
 require_relative 'shot'
 
 class Player < Body
+  attr_reader :destroyed
+
   @@ship_image = Gosu::Image.new("media/ship.bmp")
   @@thrust_image = Gosu::Image.new("media/shipthrust.bmp")
   @@dt = 1.0/60.0
@@ -13,7 +15,7 @@ class Player < Body
   @@facing_upward =  3*Math::PI/2.0
   @@zero_vector = CP::Vec2.new(0.0, 0.0)
 
-  @@invulnerable_time = 1500 # ms
+  @@invulnerable_time = 2000 # ms
 
   def initialize(shots, shape = default_shape)
     super shape
@@ -26,26 +28,15 @@ class Player < Body
     self.velocity = still
     self.angle = facing_upward
     @destroyed = false
-    @spawned_at = Gosu.milliseconds
-    @accelerated_at = nil
+    @invulnerability_expires = Gosu.milliseconds + @@invulnerable_time
   end
 
   def destroyed!
     @destroyed = true
   end
 
-  def is_destroyed?
-    @destroyed
-  end
-
-  if defined? RSpec
-    def body
-      @shape.body
-    end
-  end
-
   def invulnerable?
-    invulnerability_left > 0
+    @invulnerability_expires > Gosu.milliseconds
   end
 
   def add_to_space(space)
@@ -55,7 +46,6 @@ class Player < Body
 
   def accelerate_none
     @accelerating = false
-    @accelerated_at = nil
   end
 
   def reset_forces
@@ -113,9 +103,8 @@ class Player < Body
   # forward momentum by creating a vector in the direction of the facing
   # and with a magnitude representing the force we want to apply
   def accelerate(force = 2000.0)
-    @shape.body.apply_force((radians_to_vec2(@shape.body.a) * force), self.zero_offset)
+    @shape.body.apply_force((self.class.radians_to_vec2(@shape.body.a) * force), self.zero_offset)
     @accelerating = true
-    @accelerated_at ||= Gosu.milliseconds
   end
 
   def draw
@@ -124,18 +113,13 @@ class Player < Body
     white = 0xff_ffffff
     black = 0x00_000000
 
-    color = invulnerable? ? blink(invulnerability_left, on: white, off: black) : white
-    image = @accelerating ? blink(time_accelerating, on: @@thrust_image, off: @@ship_image) : @@ship_image
+    color = invulnerable? ? blink(Gosu.milliseconds, on: white, off: black) : white
+    image = @accelerating ? blink(Gosu.milliseconds, on: @@thrust_image, off: @@ship_image) : @@ship_image
 
     image.draw_rot(@shape.body.p.x, @shape.body.p.y, ZOrder::Player, @shape.body.a.radians_to_gosu, 0.5, 0.5, 1, 1, color)
   end
 
 private
-  # Convenience method for converting from radians to a Vec2 vector.
-  def radians_to_vec2(radians)
-    CP::Vec2.new(Math::cos(radians), Math::sin(radians))
-  end
-
   def default_body
     CP::Body.new(10.0, 150.0)
   end
@@ -155,18 +139,7 @@ private
     end
   end
 
-  def invulnerability_left
-    [
-      @spawned_at + @@invulnerable_time - Gosu.milliseconds,
-      0
-    ].max
-  end
-
-  def time_accelerating
-    Gosu.milliseconds - @accelerated_at
-  end
-
-  def blink(time_remaining, on:, off:, blink_speed: 100)
-    time_remaining.div(blink_speed).even? ? on : off
+  def blink(time, on:, off:, blink_speed: 100)
+    time.div(blink_speed).even? ? on : off
   end
 end

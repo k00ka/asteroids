@@ -55,6 +55,12 @@ class Body
     self.position = CP::Vec2.new(self.position.x % WIDTH, self.position.y % HEIGHT)
   end
 
+  if defined? RSpec
+    def body
+      @shape.body
+    end
+  end
+
 protected
   # "zero" position
   def dead_center 
@@ -83,7 +89,12 @@ protected
     CP::Vec2.new(0.0, 0.0)
   end
 
+  # Convenience method for converting from radians to a Vec2 vector.
+  def self.radians_to_vec2(radians)
+    CP::Vec2.new(Math::cos(radians), Math::sin(radians))
+  end
+
   def self.calc_velocity(direction, speed)
-    CP::Vec2.new(Math::cos(direction), Math::sin(direction)) * speed
+    radians_to_vec2(direction) * speed
   end
 end

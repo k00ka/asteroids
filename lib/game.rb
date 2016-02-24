@@ -22,8 +22,8 @@ class Game < Gosu::Window
     self.caption = "Ruby Hack Night Asteroids"
 
     # Put the beep here, as it is the environment now that determines collision
-    @high_sound = Gosu::Sample.new("media/high.wav")
-    @low_sound = Gosu::Sample.new("media/low.wav")
+    @high_doop = Gosu::Sample.new("media/high.wav")
+    @low_doop = Gosu::Sample.new("media/low.wav")
 
     @score = Score.new
 
@@ -73,6 +73,10 @@ class Game < Gosu::Window
   end
 
   def update
+    # Perform the step over @dt period of time
+    # For best performance @dt should remain consistent for the game
+    @space.step(@@dt)
+
     # Shots
     # Some shots die due to collisions (see collision code), some die of old age
     @dead_shots += @shots.select { |s| s.old? }
@@ -85,47 +89,42 @@ class Game < Gosu::Window
     @shots.each(&:validate_position)
 
     # Player
-    if @player.is_destroyed?
-      close if @dock.empty?
-      @dock.fetch_ship
-      @player.new_ship
+    if @player.destroyed
+      @dock.use_ship
+      @player.new_ship unless @dock.empty?
+    else
+      # When a force or torque is set on a body, it is cumulative
+      # This means that the force you applied last SUBSTEP will compound with the
+      # force applied this SUBSTEP; which is probably not the behavior you want
+      # We reset the forces on the Player each SUBSTEP for this reason
+      @player.reset_forces
+
+      # Acceleration/deceleration
+      @player.apply_damping
+      Gosu::button_down?(Gosu::KbUp) ? @player.accelerate : @player.accelerate_none
+
+      # Turning
+      @player.turn_none
+      @player.turn_right if Gosu::button_down?(Gosu::KbRight) && !Gosu::button_down?(Gosu::KbLeft)
+      @player.turn_left if Gosu::button_down?(Gosu::KbLeft) && !Gosu::button_down?(Gosu::KbRight)
+
+      Gosu::button_down?(Gosu::KbSpace) ? @player.shoot(@space) : @player.shoot_none
+
+      @player.hyperspace if Gosu::button_down?(Gosu::KbLeftShift) || Gosu::button_down?(Gosu::KbRightShift)
+
+      @player.validate_position
     end
-
-    # When a force or torque is set on a body, it is cumulative
-    # This means that the force you applied last SUBSTEP will compound with the
-    # force applied this SUBSTEP; which is probably not the behavior you want
-    # We reset the forces on the Player each SUBSTEP for this reason
-    @player.reset_forces
-
-    # Acceleration/deceleration
-    @player.apply_damping
-    Gosu::button_down?(Gosu::KbUp) ? @player.accelerate : @player.accelerate_none
-
-    # Turning
-    @player.turn_none
-    @player.turn_right if Gosu::button_down?(Gosu::KbRight) && !Gosu::button_down?(Gosu::KbLeft)
-    @player.turn_left if Gosu::button_down?(Gosu::KbLeft) && !Gosu::button_down?(Gosu::KbRight)
-
-    Gosu::button_down?(Gosu::KbSpace) ? @player.shoot(@space) : @player.shoot_none
-
-    @player.hyperspace if Gosu::button_down?(Gosu::KbLeftShift) || Gosu::button_down?(Gosu::KbRightShift)
-
-    @player.validate_position
 
     # Asteroids
     @split_asteroids.each do |asteroid|
       @asteroids.delete(asteroid)
       @asteroids.concat(asteroid.split(@space))
-      free_ship = @score.increment(asteroid.points)
-      @dock.free_ship if free_ship
+      @score.increment(asteroid.points)
+      @dock.reward_ship if @score.reward_free_ship
     end
     @split_asteroids.clear
 
     @asteroids.each(&:validate_position)
-
-    # Perform the step over @dt period of time
-    # For best performance @dt should remain consistent for the game
-    @space.step(@@dt)
 
     conditionally_play_doop
 
@@ -134,7 +133,11 @@ class Game < Gosu::Window
   end
 
   def draw
-    @player.draw
+    if @dock.empty?
+      draw_game_over
+    else
+      @player.draw
+    end
     @asteroids.each(&:draw)
     @shots.each(&:draw)
     @score.draw_at(180, 0)
@@ -147,11 +150,18 @@ class Game < Gosu::Window
 
   def conditionally_play_doop
     @step += 1
-    doop_delay = @asteroids.inject(0) { |s,a| s + a.scale } * 4
+    doop_delay = @asteroids.inject(1) { |s,a| s + a.scale } * 4
     if @step > doop_delay
-      @doop_sound = (@doop_sound == @high_sound) ? @low_sound : @high_sound
+      @doop_sound = (@doop_sound == @high_doop) ? @low_doop : @high_doop
       @doop_sound.play
       @step = 0
     end
+  end
+
+  def draw_game_over
+    font = Gosu::Font.new(70, name: "media/Hyperspace.ttf")
+    middle = 0.5
+    center = 0.5
+    font.draw_rel("GAME OVER", WIDTH/2, HEIGHT/2, ZOrder::UI, middle, center)
   end
 end

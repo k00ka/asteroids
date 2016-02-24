@@ -9,8 +9,7 @@ module Asteroid
     attr_reader :image, :shape
     attr_writer :shape if defined? RSpec
 
-    @@boom_sound = Gosu::Sample.new("media/boom.wav")
-    @@white = Gosu::Color.new(0xff_ffffff)
+    @@white = 0xff_ffffff
 
     # accept position, so that it can be set when an asteroid is split
     def initialize(position = self.class.random_position)
@@ -24,7 +23,7 @@ module Asteroid
     end
 
     def split(space)
-      @@boom_sound.play
+      self.class.random_boom_sound.play
       remove_from_space(space) # remove the original piece
       chunks.each { |chunk| chunk.add_to_space(space) } # add chunks, if any
     end
@@ -43,6 +42,15 @@ module Asteroid
         Gosu::Image.new("media/ast#{size}4.bmp")
       ]
       @@asteroid_images.sample
+    end
+
+    def self.random_boom_sound
+      @@boom_sounds = [
+        Gosu::Sample.new("media/boom1.wav"),
+        Gosu::Sample.new("media/boom2.wav"),
+        Gosu::Sample.new("media/boom3.wav")
+      ]
+      @@boom_sounds.sample
     end
 
     def self.random_velocity
