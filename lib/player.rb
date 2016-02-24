@@ -50,7 +50,7 @@ class Player < Body
   end
 
   def apply_damping
-    @shape.body.update_velocity(self.zero_gravity, 0.996, @dt)
+    @shape.body.update_velocity(zero_gravity, 0.996, @dt)
   end
 
   # Directly set the position of our Player
@@ -59,7 +59,7 @@ class Player < Body
   end
 
   def starting_position
-    self.position = self.dead_center
+    self.position = dead_center
   end
 
   # Turn a constant speed cw
@@ -78,11 +78,16 @@ class Player < Body
 
   def shoot(space)
     return if @shooting || @shots.length > 3
-    Shot.new(self.position, self.angle).tap do |s|
+    Shot.new(location_of_gun, angle).tap do |s|
       @shots << s
       s.add_to_space(space)
     end
     @shooting = true
+  end
+
+  def location_of_gun
+    # the shot must start outside of my body, otherwise a collision will be registered and I'll die
+    position + 18 * self.class.radians_to_vec2(angle)
   end
 
   def shoot_none
@@ -92,7 +97,7 @@ class Player < Body
   def hyperspace
     return if @hyperspacing
     reset_forces
-    self.velocity = self.still
+    self.velocity = still
     self.position = self.class.random_position
     @hyperspacing = true
   end
@@ -106,7 +111,7 @@ class Player < Body
   # forward momentum by creating a vector in the direction of the facing
   # and with a magnitude representing the force we want to apply
   def accelerate(force = 2000.0)
-    @shape.body.apply_force((self.class.radians_to_vec2(@shape.body.a) * force), self.zero_offset)
+    @shape.body.apply_force((self.class.radians_to_vec2(@shape.body.a) * force), zero_offset)
     @accelerating = true
     @@thrust_sample.resume unless @@thrust_sample.playing?
   end
@@ -125,7 +130,7 @@ class Player < Body
     color = invulnerable? ? blink(Gosu.milliseconds, on: white, off: black) : white
     image = @accelerating ? blink(Gosu.milliseconds, on: @@thrust_image, off: @@ship_image) : @@ship_image
 
-    image.draw_rot(self.position.x, self.position.y, ZOrder::Player, self.angle.radians_to_gosu, 0.5, 0.5, 1, 1, color)
+    image.draw_rot(position.x, position.y, ZOrder::Player, angle.radians_to_gosu, 0.5, 0.5, 1, 1, color)
   end
 
 private

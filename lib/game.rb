@@ -51,10 +51,14 @@ class Game < Gosu::Window
     end
 
     @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
-      unless ship_shape.object.invulnerable?
-        @split_asteroids << asteroid_shape.object
-        @player.destroyed!
-      end
+      next if ship_shape.object.invulnerable?
+      @split_asteroids << asteroid_shape.object
+      @player.destroyed!
+    end
+
+    @space.add_collision_func(:shot, :ship) do |shot_shape, ship_shape|
+      next if ship_shape.object.invulnerable?
+      @player.destroyed!
     end
 
     # Here we tell Space that we don't want one asteroid bumping into another
