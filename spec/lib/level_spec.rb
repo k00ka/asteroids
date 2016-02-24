@@ -4,6 +4,9 @@
 
 require "level"
 
+WIDTH = 800 unless defined? WIDTH
+HEIGHT = 600 unless defined? HEIGHT
+
 RSpec.describe Level do
   describe "#complete?" do
     context "with no asteroids remaining" do
