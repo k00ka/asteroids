@@ -2,9 +2,6 @@
 
 # Ruby Hack Night Asteroids by David Andrews and Jason Schweier, 2016
 
-require "support/fakes/body"
-require "support/fakes/shape"
-
 WIDTH = 800
 HEIGHT = 600
 
@@ -34,32 +31,26 @@ RSpec.shared_examples "an initialized asteroid" do
 
     context "when initialized" do
       describe "body" do
-        let(:shape) { double("asteroid shape", :body => FakeBody.new, :object= => nil) }
-        let!(:subject) do
-          described_class.new.tap do |subj|
-            subj.shape = shape
-          end
-        end
+        subject { described_class.new }
 
         it "is in the window" do
-          expect(shape.body.p.x).to satisfy("x within window width") { |x| x >= 0 && x <= WIDTH }
-          expect(shape.body.p.y).to satisfy("y within window height") { |y| y >= 0 && y <= HEIGHT }
+          expect(subject.position.x).to satisfy("x within window width") { |x| x >= 0 && x <= WIDTH }
+          expect(subject.position.y).to satisfy("y within window height") { |y| y >= 0 && y <= HEIGHT }
         end
 
         it "has default velocity" do
-          expect(shape.body.v.x).to eql 5.0
-          expect(shape.body.v.y).to eql 5.0
+          expect(subject.velocity.x).not_to be_nil
+          expect(subject.velocity.y).not_to be_nil
         end
 
         it "faces upwards" do
-          expect(shape.body.a).to be_within(0.1).of 3 * Math::PI / 2.0
+          expect(subject.angle).to be_within(0.1).of 3 * Math::PI / 2.0
         end
       end
     end
 
     context "with a shape" do
-      let(:shape) { FakeShape.new(double.as_null_object) }
-      let!(:subject) { described_class.new(shape: shape) }
+      subject { described_class.new }
 
       it "associates itself with its shape" do
         expect(subject.shape.object).to be subject
