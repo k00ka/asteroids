@@ -97,4 +97,18 @@ protected
   def self.calc_velocity(direction, speed)
     radians_to_vec2(direction) * speed
   end
+
+private
+  def default_body
+    CP::Body.new(0.0001, 0.0001)
+  end
+
+  def self.random_boom_sound
+    @@boom_sounds = [
+      Gosu::Sample.new("media/boom1.wav"),
+      Gosu::Sample.new("media/boom2.wav"),
+      Gosu::Sample.new("media/boom3.wav")
+    ]
+    @@boom_sounds.sample
+  end
 end

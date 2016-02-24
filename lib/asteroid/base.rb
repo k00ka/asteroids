@@ -3,6 +3,7 @@
 # Ruby Hack Night Asteroids by David Andrews and Jason Schweier, 2016
 
 require_relative '../body'
+#require_relative '../circle'
 
 module Asteroid
   class Base < Body
@@ -17,9 +18,10 @@ module Asteroid
 
       self.position = position
       self.velocity = self.class.random_velocity
-      self.angle = self.facing_upward
+      self.angle = facing_upward
 
       @image = self.class.random_asteroid_image
+      #@collision_circle = Gosu::Image.new(Circle.new(scale * 26.0 / 2.0), false)
     end
 
     def split(space)
@@ -30,6 +32,7 @@ module Asteroid
 
     def draw
       @image.draw_rot(self.position.x, self.position.y, ZOrder::Asteroids, 0, 0.5, 0.5, 1, 1, @@white, :add)
+      #@collision_circle.draw_rot(self.position.x, self.position.y, ZOrder::Asteroids, 0, 0.5, 0.5, 1, 1, @@white, :add)
     end
 
   private
@@ -44,15 +47,6 @@ module Asteroid
       @@asteroid_images.sample
     end
 
-    def self.random_boom_sound
-      @@boom_sounds = [
-        Gosu::Sample.new("media/boom1.wav"),
-        Gosu::Sample.new("media/boom2.wav"),
-        Gosu::Sample.new("media/boom3.wav")
-      ]
-      @@boom_sounds.sample
-    end
-
     def self.random_velocity
       direction = (rand * 32).to_i * Math::PI / 16
       speed = 75 + (1 + (rand * 4).to_i / 3)
@@ -64,7 +58,7 @@ module Asteroid
     end
 
     def default_shape
-      scaled_radius = 25.to_f / 2 * scale
+      scaled_radius = scale * 26.0 / 2.0 
       CP::Shape::Circle.new(default_body, scaled_radius, CP::Vec2.new(0.0, 0.0)).tap do |s|
         s.collision_type = :asteroid
         s.object = self

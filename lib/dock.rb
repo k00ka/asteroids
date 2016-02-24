@@ -20,7 +20,7 @@ class Dock
   def draw_at(x, y)
     # the dock includes an image of your current ship
     @count.times do |i|
-      @@image.draw(x+i*20, y, ZOrder::Player)
+      @@image.draw(x+i*20, y, ZOrder::UI)
     end
   end
 end

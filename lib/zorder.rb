@@ -4,5 +4,5 @@
 
 module ZOrder
 # Layering of objects
-  Background, Asteroids, Shots, Player, UI = *0..4
+  Background, Shots, Asteroids, Aliens, Player, UI = *0..5
 end

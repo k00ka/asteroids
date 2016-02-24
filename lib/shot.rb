@@ -31,10 +31,6 @@ class Shot < Body
   end
 
 private
-  def default_body
-    CP::Body.new(0.0001, 0.0001)
-  end
-
   def default_shape
     shape_array = [CP::Vec2.new(-1.0, -1.0), CP::Vec2.new(-1.0, 1.0), CP::Vec2.new(1.0, 1.0), CP::Vec2.new(1.0, -1.0)]
     CP::Shape::Poly.new(default_body, shape_array).tap do |s|

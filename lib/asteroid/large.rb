@@ -15,7 +15,7 @@ module Asteroid
     end
 
     def scale
-      4
+      4.0
     end
   end
 end

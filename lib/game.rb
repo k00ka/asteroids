@@ -29,7 +29,7 @@ class Game < Gosu::Window
     @asteroids = Array.new
     @shots = Array.new # this includes both player's and alien's
     @player = Player.new(@shots, @@dt)
-    @alien = Alien.new(@shots)
+    @aliens = []
 
     # Game progress indicators
     @level = Level.new(@space, @asteroids)
@@ -42,6 +42,7 @@ class Game < Gosu::Window
     # in the same order that their collision_types are defined in the add_collision_func call
     @split_asteroids = []
     @dead_shots = []
+    @dead_aliens = []
 
     @space.add_collision_func(:shot, :asteroid) do |shot_shape, asteroid_shape|
       @dead_shots << shot_shape.object
@@ -56,7 +57,7 @@ class Game < Gosu::Window
 
     @space.add_collision_func(:shot, :alien) do |shot_shape, alien_shape|
       @dead_shots << shot_shape.object
-      @alien.destroyed!
+      @dead_aliens << alien_shape.object
     end
 
     @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
@@ -68,7 +69,12 @@ class Game < Gosu::Window
     @space.add_collision_func(:ship, :alien) do |ship_shape, alien_shape|
       next if ship_shape.object.invulnerable?
       @player.destroyed!
-      @alien.destroyed!
+      @dead_aliens << alien_shape.object
+    end
+
+    @space.add_collision_func(:alien, :asteroid) do |alien_shape, asteroid_shape|
+      @dead_aliens << alien_shape.object
+      @split_asteroids << asteroid_shape.object
     end
 
     # Here we tell Space that we don't want one asteroid bumping into another
@@ -80,6 +86,7 @@ class Game < Gosu::Window
     @space.add_collision_func(:asteroid, :asteroid, &nil)
     @space.add_collision_func(:shot, :shot, &nil)
     @space.add_collision_func(:ship, :ship, &nil) # for two player? ;)
+    @space.add_collision_func(:alien, :alien, &nil)
 
     # SOUNDS
     @high_doop = Gosu::Sample.new("media/high.wav")
@@ -139,29 +146,37 @@ class Game < Gosu::Window
       @asteroids.delete(asteroid)
       @asteroids.concat(asteroid.split(@space))
       @score.increment(asteroid.points)
-      if @score.reward_free_ship
-        @dock.reward_ship
-        @free_ship_sound.play
-      end
+      conditionally_reward_free_ship
     end
     @split_asteroids.clear
 
     @asteroids.each(&:validate_position)
 
+    # Aliens
+    @dead_aliens.each do |alien|
+      @aliens.delete(alien)
+      alien.remove_from_space(@space)
+      @score.increment(alien.points)
+      conditionally_reward_free_ship
+    end
+    @dead_aliens.clear
+
+    @aliens.each(&:validate_position)
+    #@aliens.each{ |a| a.shoot(@space) }
+    apply_alien_behaviour
+
     conditionally_play_doop
+    conditionally_send_alien
 
     # See if we need to add more asteroids...
     @level.next! if @level.complete?
   end
 
   def draw
-    if @dock.empty?
-      draw_game_over
-    else
-      @player.draw
-    end
-    @asteroids.each(&:draw)
     @shots.each(&:draw)
+    @asteroids.each(&:draw)
+    @aliens.each(&:draw)
+    @dock.empty? ? draw_game_over : @player.draw
     @score.draw_at(180, 0)
     @dock.draw_at(100, 70)
   end
@@ -171,6 +186,12 @@ class Game < Gosu::Window
   end
 
 private
+  def conditionally_reward_free_ship
+    return unless @score.reward_free_ship
+    @dock.reward_ship
+    @free_ship_sound.play
+  end
+
   def conditionally_play_doop
     @last_doop_time ||= Gosu.milliseconds
     doop_delay = @asteroids.inject(1) { |s,a| s + a.scale } * 80
@@ -181,6 +202,24 @@ private
     end
   end
 
+  def conditionally_send_alien
+    return unless @aliens.empty?
+    alien = Alien.new(@shots)
+    @aliens << alien
+    alien.add_to_space(@space)
+  end
+
+  def apply_alien_behaviour
+    @aliens.each do |alien|
+      if alien.reached_endpoint?
+        @aliens.delete(alien)
+        alien.remove_from_space(@space)
+      else
+        alien.update_flight_path
+      end
+    end
+  end
+
   def draw_game_over
     font = Gosu::Font.new(70, name: "media/Hyperspace.ttf")
     middle = 0.5
@@ -188,6 +227,7 @@ private
     font.draw_rel("GAME OVER", WIDTH/2, HEIGHT/2, ZOrder::UI, middle, center)
   end
 
+  # CONTROLS
   def accelerate_control_pressed
     Gosu::button_down?(Gosu::KbUp)
   end

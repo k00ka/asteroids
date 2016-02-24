@@ -12,9 +12,6 @@ class Player < Body
   @@thrust_image = Gosu::Image.new("media/shipthrust.bmp")
   @@thrust_sample = Gosu::Sample.new("media/thrust.wav").play(1, 1, true)
 
-  @@facing_upward =  3*Math::PI/2.0
-  @@zero_vector = CP::Vec2.new(0.0, 0.0)
-
   @@invulnerable_time = 2000 # ms
 
   def initialize(shots, dt)
@@ -76,6 +73,11 @@ class Player < Body
     self.spin = 0.0
   end
 
+  def location_of_gun
+    # the shot must start outside of my body, otherwise a collision will be registered and I'll die
+    position + self.class.radians_to_vec2(angle) * 18
+  end
+
   def shoot(space)
     return if @shooting || @shots.length > 3
     Shot.new(location_of_gun, angle).tap do |s|
@@ -83,11 +85,6 @@ class Player < Body
       s.add_to_space(space)
     end
     @shooting = true
-  end
-
-  def location_of_gun
-    # the shot must start outside of my body, otherwise a collision will be registered and I'll die
-    position + self.class.radians_to_vec2(angle) * 18
   end
 
   def shoot_none
@@ -111,7 +108,7 @@ class Player < Body
   # forward momentum by creating a vector in the direction of the facing
   # and with a magnitude representing the force we want to apply
   def accelerate(force = 2000.0)
-    @shape.body.apply_force((self.class.radians_to_vec2(@shape.body.a) * force), zero_offset)
+    @shape.body.apply_force((self.class.radians_to_vec2(angle) * force), zero_offset)
     @accelerating = true
     @@thrust_sample.resume unless @@thrust_sample.playing?
   end
@@ -143,7 +140,7 @@ private
     # Chipmunk defines 3 types of Shapes: Segments, Circles and Polys
     # We'll use a simple, 4 sided Poly for our Player (ship)
     # You need to define the vectors so that the "top" of the Shape is towards 0 radians (the right)
-    shape_array = [CP::Vec2.new(-25.0, -25.0), CP::Vec2.new(-25.0, 25.0), CP::Vec2.new(25.0, 1.0), CP::Vec2.new(25.0, -1.0)]
+    shape_array = [CP::Vec2.new(-20.0, -13.0), CP::Vec2.new(-20.0, 14.0), CP::Vec2.new(20.0, 1.0)]
     CP::Shape::Poly.new(default_body, shape_array).tap do |s|
       # The collision_type of a shape allows us to set up special collision behavior
       # based on these types.  The actual value for the collision_type is arbitrary

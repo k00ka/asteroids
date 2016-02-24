@@ -15,7 +15,7 @@ module Asteroid
     end
 
     def scale
-      2
+      2.0
     end
   end
 end
