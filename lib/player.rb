@@ -62,12 +62,6 @@ class Player < Body
     self.position = self.dead_center
   end
 
-  def hyperspace
-    reset_forces
-    self.velocity = self.still
-    self.position = self.class.random_position
-  end
-
   # Turn a constant speed cw
   def turn_right(rate = 6.0)
     self.spin = rate
@@ -93,6 +87,18 @@ class Player < Body
 
   def shoot_none
     @shooting = false
+  end
+
+  def hyperspace
+    return if @hyperspacing
+    reset_forces
+    self.velocity = self.still
+    self.position = self.class.random_position
+    @hyperspacing = true
+  end
+
+  def hyperspace_none
+    @hyperspacing = false
   end
 
   # Apply forward force; Chipmunk will do the rest

@@ -102,17 +102,16 @@ class Game < Gosu::Window
 
       # Acceleration/deceleration
       @player.apply_damping
-      Gosu::button_down?(Gosu::KbUp) ? @player.accelerate : @player.accelerate_none
+      accelerate_control_pressed ? @player.accelerate : @player.accelerate_none
 
       # Turning
       @player.turn_none
-      @player.turn_right if Gosu::button_down?(Gosu::KbRight) && !Gosu::button_down?(Gosu::KbLeft)
-      @player.turn_left if Gosu::button_down?(Gosu::KbLeft) && !Gosu::button_down?(Gosu::KbRight)
+      @player.turn_right if turn_right_control_pressed
+      @player.turn_left if turn_left_control_pressed
 
-      Gosu::button_down?(Gosu::KbSpace) ? @player.shoot(@space) : @player.shoot_none
+      shoot_control_pressed ? @player.shoot(@space) : @player.shoot_none
 
-      @player.hyperspace if Gosu::button_down?(Gosu::KbLeftShift) || Gosu::button_down?(Gosu::KbRightShift)
-
+      hyperspace_control_pressed ? @player.hyperspace : @player.hyperspace_none
       @player.validate_position
     end
 
@@ -152,6 +151,7 @@ class Game < Gosu::Window
     close if id == Gosu::KbEscape
   end
 
+private
   def conditionally_play_doop
     @step += 1
     doop_delay = @asteroids.inject(1) { |s,a| s + a.scale } * 4
@@ -167,5 +167,21 @@ class Game < Gosu::Window
     middle = 0.5
     center = 0.5
     font.draw_rel("GAME OVER", WIDTH/2, HEIGHT/2, ZOrder::UI, middle, center)
+  end
+
+  def accelerate_control_pressed
+    Gosu::button_down?(Gosu::KbUp)
+  end
+  def turn_right_control_pressed
+    Gosu::button_down?(Gosu::KbRight) && !Gosu::button_down?(Gosu::KbLeft)
+  end
+  def turn_left_control_pressed
+    Gosu::button_down?(Gosu::KbLeft) && !Gosu::button_down?(Gosu::KbRight)
+  end
+  def shoot_control_pressed
+    Gosu::button_down?(Gosu::KbSpace)
+  end
+  def hyperspace_control_pressed
+    Gosu::button_down?(Gosu::KbLeftShift) || Gosu::button_down?(Gosu::KbRightShift)
   end
 end
