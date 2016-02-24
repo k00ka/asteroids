@@ -21,10 +21,6 @@ class Game < Gosu::Window
 
     self.caption = "Ruby Hack Night Asteroids"
 
-    # Put the beep here, as it is the environment now that determines collision
-    @high_doop = Gosu::Sample.new("media/high.wav")
-    @low_doop = Gosu::Sample.new("media/low.wav")
-
     @score = Score.new
 
     # Create our Space and set its damping
@@ -70,6 +66,10 @@ class Game < Gosu::Window
     # To see the effect, remove this line and play the game, every once in a while
     # you'll see an asteroid moving
     @space.add_collision_func(:asteroid, :asteroid, &nil)
+
+    @high_doop = Gosu::Sample.new("media/high.wav")
+    @low_doop = Gosu::Sample.new("media/low.wav")
+    @free_ship_sound = Gosu::Sample.new("media/freeship.wav")
   end
 
   def update
@@ -91,6 +91,7 @@ class Game < Gosu::Window
     # Player
     if @player.destroyed
       @dock.use_ship
+      @player.accelerate_none
       @player.new_ship unless @dock.empty?
     else
       # When a force or torque is set on a body, it is cumulative
@@ -120,7 +121,10 @@ class Game < Gosu::Window
       @asteroids.delete(asteroid)
       @asteroids.concat(asteroid.split(@space))
       @score.increment(asteroid.points)
-      @dock.reward_ship if @score.reward_free_ship
+      if @score.reward_free_ship
+        @dock.reward_ship
+        @free_ship_sound.play
+      end
     end
     @split_asteroids.clear
 
