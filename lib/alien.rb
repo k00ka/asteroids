@@ -10,7 +10,10 @@ class Alien < Body
 
   @@large_alien_image = Gosu::Image.new("media/alienlrg.bmp")
   @@small_alien_image = Gosu::Image.new("media/alienlrg.bmp")
+  @@alien_sample = Gosu::Sample.new("media/alien.wav").play(1, 1, true)
+  @@alien_sample.pause
   @@speed = 150
+  @@shot_delay = 700
 
   def initialize(shots)
     super default_shape
@@ -19,7 +22,9 @@ class Alien < Body
     self.position.y = rand * HEIGHT
     self.angle = facing_upward
     @horizontal_direction = [-1, 1].sample
+    self.position.x = (1-@horizontal_direction)*WIDTH/2
     update_flight_path
+    @last_shot_time = Gosu.milliseconds
   end
 
   def points
@@ -30,13 +35,22 @@ class Alien < Body
     @@large_alien_image.draw_rot(position.x, position.y, ZOrder::Aliens, 0.0)
   end
 
+  def destroyed!
+    self.class.random_boom_sound.play
+  end
+
+  def ready_to_shoot?
+    Gosu.milliseconds > @last_shot_time + @@shot_delay
+  end
+
   def shoot(space)
     angle = random_angle
-    location_of_gun = position + self.class.radians_to_vec2(angle) * 25
+    location_of_gun = position + self.class.radians_to_vec2(angle) * 30
     Shot.new(location_of_gun, angle).tap do |s|
       @shots << s
       s.add_to_space(space)
     end
+    @last_shot_time = Gosu.milliseconds
   end
 
   def update_flight_path
@@ -56,8 +70,16 @@ class Alien < Body
     :inner #angled
   end
 
+  def self.start_sound
+    @@alien_sample.resume unless @@alien_sample.playing?
+  end
+
+  def self.stop_sound
+    @@alien_sample.pause if @@alien_sample.playing?
+  end
+
   def reached_endpoint?
-    position.x == 0 || position.x == WIDTH
+    position.x <= 0 || position.x >= WIDTH
   end
 
 private

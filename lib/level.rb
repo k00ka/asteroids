@@ -17,6 +17,11 @@ class Level
     @asteroids.empty?
   end
 
+  def time_between_aliens
+    return 999999 if @round < 2
+    12000 - Math.sqrt(@round) * 1000
+  end
+
   def next!
     @round += 1
     asteroid_count.times do
@@ -28,6 +33,6 @@ class Level
 
 private
   def asteroid_count
-    3 + @round
+    [2 + (@round * 2), 11].min
   end
 end

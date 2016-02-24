@@ -31,15 +31,11 @@ class Player < Body
 
   def destroyed!
     @destroyed = true
+    self.class.random_boom_sound.play
   end
 
   def invulnerable?
     @invulnerability_expires > Gosu.milliseconds
-  end
-
-  def add_to_space(space)
-    space.add_body(@shape.body)
-    space.add_shape(@shape)
   end
 
   def reset_forces

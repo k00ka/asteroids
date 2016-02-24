@@ -57,6 +57,7 @@ class Game < Gosu::Window
 
     @space.add_collision_func(:shot, :alien) do |shot_shape, alien_shape|
       @dead_shots << shot_shape.object
+      alien_shape.object.destroyed! # reconsider
       @dead_aliens << alien_shape.object
     end
 
@@ -98,12 +99,11 @@ class Game < Gosu::Window
   end
 
   def update
-    # Step 
-    # Perform the step over @dt period of time
-    # For best performance @dt should remain consistent for the game
+    # Step time forward in Chipmunk
+    # For best performance this should remain consistent for the game
     @space.step(@@dt)
 
-    # Shots
+    # SHOTS
     # Some shots die due to collisions (see collision code), some die of old age
     @dead_shots += @shots.select { |s| s.old? }
     @dead_shots.each do |shot|
@@ -114,34 +114,31 @@ class Game < Gosu::Window
 
     @shots.each(&:validate_position)
 
-    # Player
+    # PLAYER
     if @player.destroyed
       @dock.use_ship
       @player.accelerate_none
       @player.new_ship unless @dock.empty?
     else
-      # When a force or torque is set on a body, it is cumulative
-      # This means that the force you applied last SUBSTEP will compound with the
-      # force applied this SUBSTEP; which is probably not the behavior you want
-      # We reset the forces on the Player each SUBSTEP for this reason
+      # When a force or torque is set on a body, it is cumulative - probably not the behavior we want
       @player.reset_forces
 
       # Acceleration/deceleration
       @player.apply_damping
       accelerate_control_pressed ? @player.accelerate : @player.accelerate_none
 
+      shoot_control_pressed ? @player.shoot(@space) : @player.shoot_none
+      hyperspace_control_pressed ? @player.hyperspace : @player.hyperspace_none
+
       # Turning
       @player.turn_none
       @player.turn_right if turn_right_control_pressed
       @player.turn_left if turn_left_control_pressed
 
-      shoot_control_pressed ? @player.shoot(@space) : @player.shoot_none
-
-      hyperspace_control_pressed ? @player.hyperspace : @player.hyperspace_none
       @player.validate_position
     end
 
-    # Asteroids
+    # ASTEROIDS
     @split_asteroids.each do |asteroid|
       @asteroids.delete(asteroid)
       @asteroids.concat(asteroid.split(@space))
@@ -152,18 +149,27 @@ class Game < Gosu::Window
 
     @asteroids.each(&:validate_position)
 
-    # Aliens
+    # ALIENS
     @dead_aliens.each do |alien|
       @aliens.delete(alien)
       alien.remove_from_space(@space)
       @score.increment(alien.points)
       conditionally_reward_free_ship
+      Alien.stop_sound unless @aliens.any?
     end
     @dead_aliens.clear
 
-    @aliens.each(&:validate_position)
-    #@aliens.each{ |a| a.shoot(@space) }
-    apply_alien_behaviour
+    @aliens.each do |alien|
+      if alien.reached_endpoint?
+        @aliens.delete(alien)
+        alien.remove_from_space(@space)
+        Alien.stop_sound unless @aliens.any?
+      else
+        alien.shoot(@space) if alien.ready_to_shoot?
+        alien.update_flight_path
+        alien.validate_position
+      end
+    end
 
     conditionally_play_doop
     conditionally_send_alien
@@ -203,21 +209,13 @@ private
   end
 
   def conditionally_send_alien
-    return unless @aliens.empty?
+    @last_alien_time ||= Gosu.milliseconds
+    return unless @last_alien_time + @level.time_between_aliens < Gosu.milliseconds
     alien = Alien.new(@shots)
     @aliens << alien
     alien.add_to_space(@space)
-  end
-
-  def apply_alien_behaviour
-    @aliens.each do |alien|
-      if alien.reached_endpoint?
-        @aliens.delete(alien)
-        alien.remove_from_space(@space)
-      else
-        alien.update_flight_path
-      end
-    end
+    @last_alien_time = Gosu.milliseconds
+    Alien.start_sound
   end
 
   def draw_game_over
