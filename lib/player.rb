@@ -87,7 +87,7 @@ class Player < Body
 
   def location_of_gun
     # the shot must start outside of my body, otherwise a collision will be registered and I'll die
-    position + 18 * self.class.radians_to_vec2(angle)
+    position + self.class.radians_to_vec2(angle) * 18
   end
 
   def shoot_none
