@@ -8,7 +8,7 @@ class Shot < Body
   @@image = Gosu::Image.new("media/shot.bmp")
   @@sound = Gosu::Sample.new("media/shot.wav")
   @@speed = 600.0
-  @@old_age = 40
+  @@old_age = 55
 
   # current player position and angle
   def initialize(position, angle)

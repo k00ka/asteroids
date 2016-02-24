@@ -29,7 +29,7 @@ class Game < Gosu::Window
 
     # Our space contains three types of things...
     @shots = Array.new
-    @player = Player.new(@shots)
+    @player = Player.new(@shots, @@dt)
     @asteroids = Array.new
 
     #

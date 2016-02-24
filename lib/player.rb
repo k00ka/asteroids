@@ -11,16 +11,16 @@ class Player < Body
   @@ship_image = Gosu::Image.new("media/ship.bmp")
   @@thrust_image = Gosu::Image.new("media/shipthrust.bmp")
   @@thrust_sample = Gosu::Sample.new("media/thrust.wav").play(1, 1, true)
-  @@dt = 1.0/60.0
 
   @@facing_upward =  3*Math::PI/2.0
   @@zero_vector = CP::Vec2.new(0.0, 0.0)
 
   @@invulnerable_time = 2000 # ms
 
-  def initialize(shots, shape = default_shape)
-    super shape
+  def initialize(shots, dt)
+    super default_shape
     @shots = shots
+    @dt = dt
     new_ship
   end
 
@@ -50,7 +50,7 @@ class Player < Body
   end
 
   def apply_damping
-    @shape.body.update_velocity(self.zero_gravity, 0.996, @@dt)
+    @shape.body.update_velocity(self.zero_gravity, 0.996, @dt)
   end
 
   # Directly set the position of our Player
