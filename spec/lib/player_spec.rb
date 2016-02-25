@@ -10,7 +10,7 @@ HEIGHT = 600 unless defined? HEIGHT
 RSpec.describe Player do
   describe "#invulnerable?" do
     context "when new" do
-      let!(:subject) { described_class.new(double("shots"), double("dt")) }
+      let!(:subject) { described_class.new(double("dt")) }
 
       it { is_expected.to be_invulnerable }
 

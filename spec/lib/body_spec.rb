@@ -12,6 +12,6 @@ describe Body do
 
     subject { described_class.new(shape) }
 
-    let(:update_position) { subject.validate_position }
+    let(:update_position) { subject.wrap_to_screen }
   end
 end
