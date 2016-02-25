@@ -107,21 +107,11 @@ class Game < Gosu::Window
       @dock.use_ship
       @player.new_ship unless @dock.no_ships?
     else
-      # When a force or torque is set on a body, it is cumulative - probably not the behavior we want
-      @player.reset_forces
-
-      # Acceleration/deceleration
-      @player.apply_damping
-      accelerate_control_pressed ? @player.accelerate : @player.accelerate_none
-
-      shoot_control_pressed ? @player.shoot : @player.shoot_none
-      hyperspace_control_pressed ? @player.hyperspace : @player.hyperspace_none
-
-      # Turning
-      @player.turn_none
-      @player.turn_right if turn_right_control_pressed
-      @player.turn_left if turn_left_control_pressed
-
+      @player.apply_damping # slows down movement over time
+      @player.accelerate(accelerate_control_pressed)
+      @player.shoot(shoot_control_pressed)
+      @player.hyperspace(hyperspace_control_pressed)
+      @player.turn(turn_right_control_pressed, turn_left_control_pressed)
       @player.wrap_to_screen
     end
 
@@ -209,10 +199,10 @@ private
     Gosu::button_down?(Gosu::KbUp)
   end
   def turn_right_control_pressed
-    Gosu::button_down?(Gosu::KbRight) && !Gosu::button_down?(Gosu::KbLeft)
+    Gosu::button_down?(Gosu::KbRight)
   end
   def turn_left_control_pressed
-    Gosu::button_down?(Gosu::KbLeft) && !Gosu::button_down?(Gosu::KbRight)
+    Gosu::button_down?(Gosu::KbLeft)
   end
   def shoot_control_pressed
     Gosu::button_down?(Gosu::KbSpace)

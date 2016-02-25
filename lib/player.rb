@@ -24,14 +24,14 @@ class Player < Body
     @destroyed = false
     self.position = dead_center
     self.velocity = still
-    self.accelerate_none
+    self.accelerate(false)
     self.angle = facing_upward
     @invulnerability_expires = Gosu.milliseconds + @@invulnerable_time
   end
 
   def destroyed!
     @destroyed = true
-    self.accelerate_none
+    self.accelerate(false)
     self.class.random_boom_sound.play
   end
 
@@ -56,18 +56,15 @@ class Player < Body
     self.position = dead_center
   end
 
-  # Turn a constant speed cw
-  def turn_right(rate = 6.0)
-    self.spin = rate
-  end
-
-  # Turn a constant speed ccw
-  def turn_left(rate = 6.0)
-    self.spin = -rate
-  end
-
-  def turn_none
-    self.spin = 0.0
+  # Turn in the given direction
+  def turn(right, left, rate = 6.0)
+    if right && !left
+      self.spin = rate
+    elsif left && !right
+      self.spin = -rate
+    else
+      self.spin = 0.0
+    end
   end
 
   def location_of_gun
@@ -75,41 +72,36 @@ class Player < Body
     position + self.class.radians_to_vec2(angle) * 18
   end
 
-  def shoot
-    return if @shooting || Shot.shots_taken(self) > 3
-    Shot.shoot(location_of_gun, angle, self)
-    @shooting = true
+  def shoot(shooting)
+    if shooting
+      return if @shooting || Shot.shots_taken(self) > 3 # return early if we have already shot for this keypress
+      Shot.shoot(location_of_gun, angle, self)
+    end
+    @shooting = shooting
   end
 
-  def shoot_none
-    @shooting = false
-  end
-
-  def hyperspace
-    return if @hyperspacing
-    reset_forces
-    self.velocity = still
-    self.position = self.class.random_position
-    @hyperspacing = true
-  end
-
-  def hyperspace_none
-    @hyperspacing = false
+  def hyperspace(hyperspacing)
+    if hyperspacing
+      return if @hyperspacing
+      self.position = self.class.random_position
+      self.velocity = still
+    end
+    @hyperspacing = hyperspacing
   end
 
   # Apply forward force; Chipmunk will do the rest
   # Here we must convert the angle (facing) of the body into
   # forward momentum by creating a vector in the direction of the facing
   # and with a magnitude representing the force we want to apply
-  def accelerate(force = 2000.0)
-    @shape.body.apply_force((self.class.radians_to_vec2(angle) * force), zero_offset)
-    @accelerating = true
-    @@thrust_sample.resume unless @@thrust_sample.playing?
-  end
-
-  def accelerate_none
-    @accelerating = false
-    @@thrust_sample.pause if @@thrust_sample.playing?
+  def accelerate(accelerating, force = 2000.0)
+    reset_forces # When a force or torque is set on a body, it is cumulative - start from zero
+    @accelerating = accelerating
+    if accelerating
+      @shape.body.apply_force((self.class.radians_to_vec2(angle) * force), zero_offset)
+      @@thrust_sample.resume unless @@thrust_sample.playing?
+    else
+      @@thrust_sample.pause if @@thrust_sample.playing?
+    end
   end
 
   def draw
