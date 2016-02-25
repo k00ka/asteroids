@@ -5,7 +5,6 @@
 require_relative 'asteroid/large'
 require_relative 'player'
 require_relative 'level'
-require_relative 'alien'
 require_relative 'dock'
 require_relative 'zorder'
 
@@ -25,14 +24,12 @@ class Game < Gosu::Window
     @space = CP::Space.new
     Shot.space = @space
     Asteroid::Base.space = @space
-    Alien.space = @space
 
     # Our space contains four types of things
     @player = Player.new(@@dt)
 
-    # Here are the game progress indicators
-    @level = Level.new
-    @dock = Dock.new(3) # this is our score and the display of ships
+    # Create some asteroids
+    Asteroid::Large.create(8)
 
     # COLLISION CALLBACKS
     # Here are closures for object collisions for each pair of things in our space...
@@ -52,26 +49,9 @@ class Game < Gosu::Window
       @player.destroyed!
     end
 
-    @space.add_collision_func(:shot, :alien) do |shot_shape, alien_shape|
-      @dead_shots << shot_shape.object
-      alien_shape.object.destroyed! # reconsider
-      @dead_aliens << alien_shape.object
-    end
-
     @space.add_collision_func(:ship, :asteroid) do |ship_shape, asteroid_shape|
       next if ship_shape.object.invulnerable?
       @player.destroyed!
-      @split_asteroids << asteroid_shape.object
-    end
-
-    @space.add_collision_func(:ship, :alien) do |ship_shape, alien_shape|
-      next if ship_shape.object.invulnerable?
-      @player.destroyed!
-      @dead_aliens << alien_shape.object
-    end
-
-    @space.add_collision_func(:alien, :asteroid) do |alien_shape, asteroid_shape|
-      @dead_aliens << alien_shape.object
       @split_asteroids << asteroid_shape.object
     end
 
@@ -79,7 +59,6 @@ class Game < Gosu::Window
     @space.add_collision_func(:asteroid, :asteroid, &nil)
     @space.add_collision_func(:shot, :shot, &nil)
     @space.add_collision_func(:ship, :ship, &nil) # for two player? ;)
-    @space.add_collision_func(:alien, :alien, &nil)
 
     # SOUNDS
     @high_doop = Gosu::Sample.new("media/high.wav")
@@ -104,8 +83,7 @@ class Game < Gosu::Window
 
     # PLAYER
     if @player.destroyed
-      @dock.use_ship
-      @player.new_ship unless @dock.no_ships?
+      @player.new_ship
     else
       @player.apply_damping # slows down movement over time
       @player.accelerate(accelerate_control_pressed)
@@ -117,29 +95,16 @@ class Game < Gosu::Window
 
     # ASTEROIDS
     Asteroid::Base.split_all(@split_asteroids)
-    @dock.increment_score(@split_asteroids.map(&:points).inject(0, &:+))
     @split_asteroids.clear
     Asteroid::Base.wrap_all_to_screen
 
-    # ALIENS
-    Alien.cull(@dead_aliens)
-    @dock.increment_score(@dead_aliens.map(&:points).inject(0, &:+))
-    @dead_aliens.clear
-    Alien.fly_and_shoot
-
     conditionally_play_doop
-    conditionally_send_alien
-
-    # See if we need to add more asteroids...
-    @level.next! if @level.complete?
   end
 
   def draw
     Shot.draw_all
     Asteroid::Base.draw_all
-    Alien.draw_all
-    @dock.no_ships? ? draw_game_over : @player.draw
-    @dock.draw_at(180, 0)
+    @player.draw
   end
 
   def button_down(id)
@@ -155,19 +120,6 @@ private
       @doop_sound.play
       @last_doop_time = Gosu.milliseconds
     end
-  end
-
-  def conditionally_send_alien
-    return unless @level.time_for_new_alien?
-    Alien.invade
-    @level.alien_added!
-  end
-
-  def draw_game_over
-    font = Gosu::Font.new(70, name: "media/Hyperspace.ttf")
-    middle = 0.5
-    center = 0.5
-    font.draw_rel("GAME OVER", WIDTH/2, HEIGHT/2, ZOrder::UI, middle, center)
   end
 
   # CONTROLS
