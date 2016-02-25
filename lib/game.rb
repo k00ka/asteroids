@@ -26,23 +26,22 @@ class Game < Gosu::Window
     @space = CP::Space.new
 
     # Our space contains four types of things
-    @asteroids = Array.new
-    @shots = Array.new # this includes both player's and alien's
+    @asteroids = []
+    @shots = [] # this includes both player's and alien's
     @player = Player.new(@shots, @@dt)
     @aliens = []
 
-    # Game progress indicators
+    # Here are the game progress indicators
     @level = Level.new(@space, @asteroids)
     @score = Score.new
     @dock = Dock.new(3) # this is our display of ships below the score
 
-    # COLLISIONS
-    # Here we define what is supposed to happen when things collide
-    # Also note that both shapes involved in the collision are passed into the closure
-    # in the same order that their collision_types are defined in the add_collision_func call
+    # COLLISION CALLBACKS
+    # Here are closures for object collisions for each pair of things in our space...
     @split_asteroids = []
     @dead_shots = []
     @dead_aliens = []
+    #@dead_players = [] this would be useful for multi-player
 
     @space.add_collision_func(:shot, :asteroid) do |shot_shape, asteroid_shape|
       @dead_shots << shot_shape.object
@@ -78,12 +77,7 @@ class Game < Gosu::Window
       @split_asteroids << asteroid_shape.object
     end
 
-    # Here we tell Space that we don't want one asteroid bumping into another
-    # The reason we need to do this is because when the Player hits a asteroid,
-    # the asteroid will travel until it is removed in the update cycle below
-    # which means it may collide and therefore push other asteroids
-    # To see the effect, remove this line and play the game, every once in a while
-    # you'll see an asteroid moving
+    # Cause like objects to ignore each other, rather than bumping into one another
     @space.add_collision_func(:asteroid, :asteroid, &nil)
     @space.add_collision_func(:shot, :shot, &nil)
     @space.add_collision_func(:ship, :ship, &nil) # for two player? ;)
@@ -98,13 +92,14 @@ class Game < Gosu::Window
     @player.add_to_space(@space)
   end
 
+  # Gosu calls this method first - to update the model, which in this case is stored in Chipmunk
   def update
-    # Step time forward in Chipmunk
-    # For best performance this should remain consistent for the game
+    # UPDATE THE MODEL
+    # Step time forward in Chipmunk - update the model and call any collision callbacks
     @space.step(@@dt)
 
     # SHOTS
-    # Some shots die due to collisions (see collision code), some die of old age
+    # Some shots die due to collisions (see collision code), some die of "old age"
     @dead_shots += @shots.select { |s| s.old? }
     @dead_shots.each do |shot|
       @shots.delete(shot)
