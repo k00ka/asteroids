@@ -10,6 +10,7 @@ module Asteroid
     attr_reader :image, :shape
     attr_writer :shape if defined? RSpec
 
+    @@asteroids = []
     @@white = 0xff_ffffff
 
     # accept position, so that it can be set when an asteroid is split
@@ -24,15 +25,38 @@ module Asteroid
       #@collision_circle = Gosu::Image.new(Circle.new(scale * 26.0 / 2.0), false)
     end
 
-    def split(space)
+    def self.split_all(asteroids)
+      asteroids.each do |asteroid|
+        @@asteroids.delete(asteroid)
+        @@asteroids.concat(asteroid.split)
+      end
+    end
+
+    def split
       self.class.random_boom_sound.play
-      remove_from_space(space) # remove the original piece
-      chunks.each { |chunk| chunk.add_to_space(space) } # add chunks, if any
+      remove_from_space(@@space) # remove the original piece
+      chunks.each { |chunk| chunk.add_to_space(@@space) } # add chunks, if any
+    end
+
+    def self.total_scale
+      @@asteroids.map(&:scale).inject(0, &:+)
+    end
+
+    def self.any?
+      @@asteroids.any?
+    end
+
+    def self.draw_all
+      @@asteroids.each(&:draw)
     end
 
     def draw
       @image.draw_rot(self.position.x, self.position.y, ZOrder::Asteroids, 0, 0.5, 0.5, 1, 1, @@white, :add)
       #@collision_circle.draw_rot(self.position.x, self.position.y, ZOrder::Asteroids, 0, 0.5, 0.5, 1, 1, @@white, :add)
+    end
+
+    def self.wrap_all_to_screen
+      @@asteroids.each(&:wrap_to_screen)
     end
 
   private

@@ -98,6 +98,10 @@ protected
     radians_to_vec2(direction) * speed
   end
 
+  def self.space=(space)
+    @@space = space
+  end
+
 private
   def default_body
     CP::Body.new(0.0001, 0.0001)

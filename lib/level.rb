@@ -2,23 +2,21 @@
 
 # Ruby Hack Night Asteroids by David Andrews and Jason Schweier, 2016
 
+require_relative 'asteroid/base'
 require_relative 'asteroid/large'
 
 class Level
-  attr_reader :asteroids
-
-  def initialize(space, asteroids)
+  def initialize(space)
     @space = space
-    @asteroids = asteroids
     @round = 0
     @last_alien_at = Gosu.milliseconds
   end
 
   def complete?
-    @asteroids.empty?
+    !Asteroid::Base.any?
   end
 
-  def new_alien?
+  def time_for_new_alien?
     @last_alien_at + time_between_aliens < Gosu.milliseconds
   end
 
@@ -29,12 +27,7 @@ class Level
   def next!
     @round += 1
     @last_alien_at = Gosu.milliseconds
-
-    asteroid_count.times do
-      asteroid = Asteroid::Large.new
-      asteroid.add_to_space(@space)
-      @asteroids << asteroid
-    end
+    Asteroid::Large.create(asteroid_count)
   end
 
 private

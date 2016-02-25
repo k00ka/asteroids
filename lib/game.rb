@@ -24,14 +24,14 @@ class Game < Gosu::Window
     # Create our Space
     @space = CP::Space.new
     Shot.space = @space
+    Asteroid::Base.space = @space
+    Alien.space = @space
 
     # Our space contains four types of things
-    @asteroids = []
     @player = Player.new(@@dt)
-    @aliens = []
 
     # Here are the game progress indicators
-    @level = Level.new(@space, @asteroids)
+    @level = Level.new(@space)
     @dock = Dock.new(3) # this is our score and the display of ships
 
     # COLLISION CALLBACKS
@@ -116,35 +116,16 @@ class Game < Gosu::Window
     end
 
     # ASTEROIDS
-    @split_asteroids.each do |asteroid|
-      @asteroids.delete(asteroid)
-      @asteroids.concat(asteroid.split(@space))
-      @dock.increment_score(asteroid.points)
-    end
+    Asteroid::Base.split_all(@split_asteroids)
+    @dock.increment_score(@split_asteroids.map(&:points).inject(0, &:+))
     @split_asteroids.clear
-
-    @asteroids.each(&:wrap_to_screen)
+    Asteroid::Base.wrap_all_to_screen
 
     # ALIENS
-    @dead_aliens.each do |alien|
-      @aliens.delete(alien)
-      alien.remove_from_space(@space)
-      @dock.increment_score(alien.points)
-      Alien.stop_sound unless @aliens.any?
-    end
+    Alien.cull(@dead_aliens)
+    @dock.increment_score(@dead_aliens.map(&:points).inject(0, &:+))
     @dead_aliens.clear
-
-    @aliens.each do |alien|
-      if alien.reached_endpoint?
-        @aliens.delete(alien)
-        alien.remove_from_space(@space)
-        Alien.stop_sound unless @aliens.any?
-      else
-        alien.shoot if alien.ready_to_shoot?
-        alien.update_flight_path
-        alien.wrap_to_screen
-      end
-    end
+    Alien.fly_and_shoot
 
     conditionally_play_doop
     conditionally_send_alien
@@ -155,8 +136,8 @@ class Game < Gosu::Window
 
   def draw
     Shot.draw_all
-    @asteroids.each(&:draw)
-    @aliens.each(&:draw)
+    Asteroid::Base.draw_all
+    Alien.draw_all
     @dock.no_ships? ? draw_game_over : @player.draw
     @dock.draw_at(180, 0)
   end
@@ -168,7 +149,7 @@ class Game < Gosu::Window
 private
   def conditionally_play_doop
     @last_doop_time ||= Gosu.milliseconds
-    doop_delay = @asteroids.inject(1) { |s,a| s + a.scale } * 80
+    doop_delay = Asteroid::Base.total_scale * 80 + 80
     if @last_doop_time + doop_delay < Gosu.milliseconds
       @doop_sound = (@doop_sound == @high_doop) ? @low_doop : @high_doop
       @doop_sound.play
@@ -177,14 +158,9 @@ private
   end
 
   def conditionally_send_alien
-    return unless @level.new_alien?
-
-    Alien.new.tap do |alien|
-      @aliens << alien
-      alien.add_to_space(@space)
-    end
+    return unless @level.time_for_new_alien?
+    Alien.invade
     @level.alien_added!
-    Alien.start_sound
   end
 
   def draw_game_over

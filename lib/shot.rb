@@ -25,10 +25,6 @@ class Shot < Body
     @@sound.play
   end
 
-  def self.wrap_all_to_screen
-    @@shots.each(&:wrap_to_screen)
-  end
-
   def self.shoot(position, angle, shooter)
     shot = new(position, angle, shooter)
     @@shots << shot
@@ -63,8 +59,8 @@ class Shot < Body
     @@image.draw(self.position.x - 0.5, self.position.y - 0.5, ZOrder::Shots)
   end
 
-  def self.space=(space)
-    @@space = space
+  def self.wrap_all_to_screen
+    @@shots.each(&:wrap_to_screen)
   end
 
 private

@@ -6,14 +6,12 @@ require_relative 'body'
 require_relative 'shot'
 
 class Alien < Body
-  attr_reader :destroyed
-
   @@large_alien_image = Gosu::Image.new("media/alienlrg.bmp")
-  @@small_alien_image = Gosu::Image.new("media/alienlrg.bmp")
   @@alien_sample = Gosu::Sample.new("media/alien.wav").play(1, 1, true)
   @@alien_sample.pause
   @@speed = 150
   @@shot_delay = 700
+  @@aliens = []
 
   def initialize
     super default_shape
@@ -26,8 +24,20 @@ class Alien < Body
     @last_shot_time = Gosu.milliseconds
   end
 
+  def self.invade
+    Alien.new.tap do |alien|
+      @@aliens << alien
+      alien.add_to_space(@@space)
+    end
+    Alien.start_sound
+  end
+
   def points
     500
+  end
+
+  def self.draw_all
+    @@aliens.each(&:draw)
   end
 
   def draw
@@ -36,6 +46,25 @@ class Alien < Body
 
   def destroyed!
     self.class.random_boom_sound.play
+  end
+
+  # called each update to remove dead aliens
+  def self.cull(aliens)
+    aliens.each do |alien|
+      @@aliens.delete(alien)
+      alien.remove_from_space(@@space)
+    end
+    Alien.stop_sound unless @@aliens.any?
+  end
+
+  # called each update to apply behaviour to our aliens
+  def self.fly_and_shoot
+    cull(@@aliens.select(&:reached_endpoint?))
+    @@aliens.each do |alien|
+      alien.shoot if alien.ready_to_shoot?
+      alien.update_flight_path
+      alien.wrap_to_screen
+    end
   end
 
   def ready_to_shoot?
@@ -76,6 +105,10 @@ class Alien < Body
 
   def reached_endpoint?
     position.x <= 0 || position.x >= WIDTH
+  end
+
+  def self.wrap_all_to_screen
+    @@aliens.each(&:wrap_to_screen)
   end
 
 private
