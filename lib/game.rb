@@ -105,7 +105,6 @@ class Game < Gosu::Window
     # PLAYER
     if @player.destroyed
       @dock.use_ship
-      @player.accelerate_none
       @player.new_ship unless @dock.no_ships?
     else
       # When a force or torque is set on a body, it is cumulative - probably not the behavior we want

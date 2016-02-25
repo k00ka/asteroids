@@ -6,13 +6,13 @@ require_relative 'body'
 require_relative 'shot'
 
 class Player < Body
-  attr_reader :destroyed
-
   @@ship_image = Gosu::Image.new("media/ship.bmp")
   @@thrust_image = Gosu::Image.new("media/shipthrust.bmp")
   @@thrust_sample = Gosu::Sample.new("media/thrust.wav").play(1, 1, true)
   @@thrust_sample.pause
   @@invulnerable_time = 2000 # ms
+
+  attr_reader :destroyed
 
   def initialize(dt)
     super default_shape
@@ -21,15 +21,17 @@ class Player < Body
   end
 
   def new_ship
+    @destroyed = false
     self.position = dead_center
     self.velocity = still
+    self.accelerate_none
     self.angle = facing_upward
-    @destroyed = false
     @invulnerability_expires = Gosu.milliseconds + @@invulnerable_time
   end
 
   def destroyed!
     @destroyed = true
+    self.accelerate_none
     self.class.random_boom_sound.play
   end
 
