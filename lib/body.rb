@@ -51,7 +51,7 @@ class Body
   end
 
   # Wrap to the other side of the screen when something goes off the edge
-  def validate_position
+  def wrap_to_screen
     self.position = CP::Vec2.new(self.position.x % WIDTH, self.position.y % HEIGHT)
   end
 

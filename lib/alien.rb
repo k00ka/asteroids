@@ -15,9 +15,8 @@ class Alien < Body
   @@speed = 150
   @@shot_delay = 700
 
-  def initialize(shots)
+  def initialize
     super default_shape
-    @shots = shots
 
     self.position.y = rand * HEIGHT
     self.angle = facing_upward
@@ -43,14 +42,10 @@ class Alien < Body
     Gosu.milliseconds > @last_shot_time + @@shot_delay
   end
 
-  def shoot(space)
+  def shoot
     angle = random_angle
     location_of_gun = position + self.class.radians_to_vec2(angle) * 30
-    Shot.new(location_of_gun, angle).tap do |s|
-      @shots << s
-      s.add_to_space(space)
-      s.shooter = self
-    end
+    Shot.shoot(location_of_gun, angle, self)
     @last_shot_time = Gosu.milliseconds
   end
 

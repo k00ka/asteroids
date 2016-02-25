@@ -23,11 +23,11 @@ class Game < Gosu::Window
 
     # Create our Space
     @space = CP::Space.new
+    Shot.space = @space
 
     # Our space contains four types of things
     @asteroids = []
-    @shots = [] # this includes both player's and alien's
-    @player = Player.new(@shots, @@dt)
+    @player = Player.new(@@dt)
     @aliens = []
 
     # Here are the game progress indicators
@@ -97,14 +97,10 @@ class Game < Gosu::Window
 
     # SHOTS
     # Some shots die due to collisions (see collision code), some die of "old age"
-    @dead_shots += @shots.select { |s| s.old? }
-    @dead_shots.each do |shot|
-      @shots.delete(shot)
-      shot.remove_from_space(@space)
-    end
+    @dead_shots += Shot.old_shots
+    Shot.cull(@dead_shots)
     @dead_shots.clear
-
-    @shots.each(&:validate_position)
+    Shot.wrap_all_to_screen
 
     # PLAYER
     if @player.destroyed
@@ -119,7 +115,7 @@ class Game < Gosu::Window
       @player.apply_damping
       accelerate_control_pressed ? @player.accelerate : @player.accelerate_none
 
-      shoot_control_pressed ? @player.shoot(@space) : @player.shoot_none
+      shoot_control_pressed ? @player.shoot : @player.shoot_none
       hyperspace_control_pressed ? @player.hyperspace : @player.hyperspace_none
 
       # Turning
@@ -127,7 +123,7 @@ class Game < Gosu::Window
       @player.turn_right if turn_right_control_pressed
       @player.turn_left if turn_left_control_pressed
 
-      @player.validate_position
+      @player.wrap_to_screen
     end
 
     # ASTEROIDS
@@ -138,7 +134,7 @@ class Game < Gosu::Window
     end
     @split_asteroids.clear
 
-    @asteroids.each(&:validate_position)
+    @asteroids.each(&:wrap_to_screen)
 
     # ALIENS
     @dead_aliens.each do |alien|
@@ -155,9 +151,9 @@ class Game < Gosu::Window
         alien.remove_from_space(@space)
         Alien.stop_sound unless @aliens.any?
       else
-        alien.shoot(@space) if alien.ready_to_shoot?
+        alien.shoot if alien.ready_to_shoot?
         alien.update_flight_path
-        alien.validate_position
+        alien.wrap_to_screen
       end
     end
 
@@ -169,7 +165,7 @@ class Game < Gosu::Window
   end
 
   def draw
-    @shots.each(&:draw)
+    Shot.draw_all
     @asteroids.each(&:draw)
     @aliens.each(&:draw)
     @dock.no_ships? ? draw_game_over : @player.draw
@@ -194,7 +190,7 @@ private
   def conditionally_send_alien
     return unless @level.new_alien?
 
-    Alien.new(@shots).tap do |alien|
+    Alien.new.tap do |alien|
       @aliens << alien
       alien.add_to_space(@space)
     end

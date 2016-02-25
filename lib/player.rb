@@ -11,12 +11,11 @@ class Player < Body
   @@ship_image = Gosu::Image.new("media/ship.bmp")
   @@thrust_image = Gosu::Image.new("media/shipthrust.bmp")
   @@thrust_sample = Gosu::Sample.new("media/thrust.wav").play(1, 1, true)
-
+  @@thrust_sample.pause
   @@invulnerable_time = 2000 # ms
 
-  def initialize(shots, dt)
+  def initialize(dt)
     super default_shape
-    @shots = shots
     @dt = dt
     new_ship
   end
@@ -74,13 +73,9 @@ class Player < Body
     position + self.class.radians_to_vec2(angle) * 18
   end
 
-  def shoot(space)
-    return if @shooting || shots_taken > 3
-    Shot.new(location_of_gun, angle).tap do |s|
-      @shots << s
-      s.add_to_space(space)
-      s.shooter = self
-    end
+  def shoot
+    return if @shooting || Shot.shots_taken(self) > 3
+    Shot.shoot(location_of_gun, angle, self)
     @shooting = true
   end
 
@@ -132,14 +127,10 @@ private
     CP::Body.new(10.0, 150.0)
   end
 
-  def shots_taken
-    @shots.count { |shot| shot.shooter.is_a? self.class }
-  end
-
   def default_shape
     # In order to create a shape, we must first define it
     # Chipmunk defines 3 types of Shapes: Segments, Circles and Polys
-    # We'll use a simple, 4 sided Poly for our Player (ship)
+    # We'll use a simple, 3 sided Poly for our Player (ship)
     # You need to define the vectors so that the "top" of the Shape is towards 0 radians (the right)
     shape_array = [CP::Vec2.new(-20.0, -13.0), CP::Vec2.new(-20.0, 14.0), CP::Vec2.new(20.0, 1.0)]
     CP::Shape::Poly.new(default_body, shape_array).tap do |s|

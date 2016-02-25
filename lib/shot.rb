@@ -9,18 +9,53 @@ class Shot < Body
   @@sound = Gosu::Sample.new("media/shot.wav")
   @@speed = 600.0
   @@old_age = 50
+  @@shots = []
 
-  attr_accessor :shooter
+  attr_reader :shooter
 
   # current player position and angle
-  def initialize(position, angle)
+  def initialize(position, angle, shooter)
     super default_shape
 
     self.position = position
     self.velocity = self.class.calc_velocity(angle, @@speed)
-
+    @shooter = shooter
     @age = 0
+
     @@sound.play
+  end
+
+  def self.wrap_all_to_screen
+    @@shots.each(&:wrap_to_screen)
+  end
+
+  def self.shoot(position, angle, shooter)
+    shot = new(position, angle, shooter)
+    @@shots << shot
+    shot.add_to_space(@@space)
+  end
+
+  def self.shots_taken(shooter)
+    @@shots.count { |s| s.shooter == shooter }
+  end
+
+  def self.cull(shots)
+    shots.each do |shot|
+      @@shots.delete(shot)
+      shot.remove_from_space(@@space)
+    end
+  end
+
+  def self.old_shots
+    @@shots.select { |s| s.old? }
+  end
+
+  def old?
+    @age > @@old_age
+  end
+
+  def self.draw_all
+    @@shots.each(&:draw)
   end
 
   def draw
@@ -28,8 +63,8 @@ class Shot < Body
     @@image.draw(self.position.x - 0.5, self.position.y - 0.5, ZOrder::Shots)
   end
 
-  def old?
-    @age > @@old_age
+  def self.space=(space)
+    @@space = space
   end
 
 private
