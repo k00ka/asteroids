@@ -70,3 +70,13 @@ boolean inPolygon(byte nvert, byte *xvert, byte *yvert, int x, int y) {
 ```
 
 Each object displayed on the screen is defined by a set of vertices for the purpose of detecting collisions. The vertices define a polygon which let us detect if a point is in the polygon. For example, the code needs to detect if any of the shots fired by our ship are within any of the polygons that define the asteroids. This point-in-polygon algorithm is used for all collision detection in the game.
+
+## Bonus Features
+
+These additional features are not required for basic gameplay, but they do add to the playability of the game.
+
+* Once a level is cleared, the next level starts immediately. Introduce a delay to give the player a short break.
+* At the start of a level, asteroids may appear directly on the player. Introduce logic to make sure asteroids are not generated within a reasonable distance from the player.
+* When the player dies, create (or find!) an explosion animation. Animations in Gosu are handled with [tiles](https://www.libgosu.org/rdoc/Gosu/Image.html#load_tiles-class_method).
+* The original game also included a small alien saucer. It had a shorter bullet range but was far more accurate, able to hit the player in only 2-3 shots. The small saucer did not appear until the player hit 10,000 points.
+* When game entities reach the edge of the screen, they remain on their current side until their midpoint becomes offscreen, at which point, they immediately jump to the opposite side of the screen. It would be nicer if, as some of their body went offscreen, that part would appear on the opposite side.
