@@ -7,7 +7,6 @@ require_relative 'player'
 require_relative 'level'
 require_relative 'alien'
 require_relative 'dock'
-require_relative 'score'
 require_relative 'zorder'
 
 # The Gosu::Window is always the "environment" of our game
@@ -33,8 +32,7 @@ class Game < Gosu::Window
 
     # Here are the game progress indicators
     @level = Level.new(@space, @asteroids)
-    @score = Score.new
-    @dock = Dock.new(3) # this is our display of ships below the score
+    @dock = Dock.new(3) # this is our score and the display of ships
 
     # COLLISION CALLBACKS
     # Here are closures for object collisions for each pair of things in our space...
@@ -86,7 +84,6 @@ class Game < Gosu::Window
     # SOUNDS
     @high_doop = Gosu::Sample.new("media/high.wav")
     @low_doop = Gosu::Sample.new("media/low.wav")
-    @free_ship_sound = Gosu::Sample.new("media/freeship.wav")
 
     # Ready...set...play!
     @player.add_to_space(@space)
@@ -113,7 +110,7 @@ class Game < Gosu::Window
     if @player.destroyed
       @dock.use_ship
       @player.accelerate_none
-      @player.new_ship unless @dock.empty?
+      @player.new_ship unless @dock.no_ships?
     else
       # When a force or torque is set on a body, it is cumulative - probably not the behavior we want
       @player.reset_forces
@@ -137,8 +134,7 @@ class Game < Gosu::Window
     @split_asteroids.each do |asteroid|
       @asteroids.delete(asteroid)
       @asteroids.concat(asteroid.split(@space))
-      @score.increment(asteroid.points)
-      conditionally_reward_free_ship
+      @dock.increment_score(asteroid.points)
     end
     @split_asteroids.clear
 
@@ -148,8 +144,7 @@ class Game < Gosu::Window
     @dead_aliens.each do |alien|
       @aliens.delete(alien)
       alien.remove_from_space(@space)
-      @score.increment(alien.points)
-      conditionally_reward_free_ship
+      @dock.increment_score(alien.points)
       Alien.stop_sound unless @aliens.any?
     end
     @dead_aliens.clear
@@ -177,9 +172,8 @@ class Game < Gosu::Window
     @shots.each(&:draw)
     @asteroids.each(&:draw)
     @aliens.each(&:draw)
-    @dock.empty? ? draw_game_over : @player.draw
-    @score.draw_at(180, 0)
-    @dock.draw_at(100, 70)
+    @dock.no_ships? ? draw_game_over : @player.draw
+    @dock.draw_at(180, 0)
   end
 
   def button_down(id)
@@ -187,12 +181,6 @@ class Game < Gosu::Window
   end
 
 private
-  def conditionally_reward_free_ship
-    return unless @score.reward_free_ship
-    @dock.reward_ship
-    @free_ship_sound.play
-  end
-
   def conditionally_play_doop
     @last_doop_time ||= Gosu.milliseconds
     doop_delay = @asteroids.inject(1) { |s,a| s + a.scale } * 80
