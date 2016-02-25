@@ -1,75 +1,149 @@
-# asteroids
-Asteroids on Gosu
+Ruby Hack Night Asteroids
+=========================
+
+Slides and assets for the Asteroids workshop [first presented at Toronto Ruby Hack Night, February 25, 2016]
+Workshop for learning Gosu and Chipmunk
+Created by David Andrews and Jason Schweier
+
+###Introduction
+
+This project is a simple Ruby Gosu + Chipmunk project. If you follow the instructions below, you can test your machine in advance of the workshop.
+
+We have provided a repository which mimics the setup we used last time, so it should be familiar. The code to be created is found in the ``lib/`` directory.
+
+###Setup
+
+Here are the steps to get you started with the repo.
+
+1. For this workshop, you will need a laptop with the following:
+  - [x] Ruby 2.x  
+  - [x] A github account  
+  Note: We have included a ``.ruby-version`` file locked to 2.2.3, which you can change to any Ruby 2.x version if you don't have 2.2.3 installed  
+  More detailed instructions for each platform are included in the footer. Refer there if you are having issues.
+
+1. At Ryatta Group we use rbenv, and so we've included some optional elements - just skip them if you're using rvm or are not versioning your Ruby.
+
+  ```sh
+  % git clone git@github.com:k00ka/asteroids.git
+  % cd asteroids
+  % gem install bundler
+  Fetching: bundler-1.7.4.gem (100%)
+  Successfully installed bundler-1.7.4
+  1 gem installed
+  % bundle
+  Fetching gem metadata from https://rubygems.org/.........
+  Resolving dependencies...
+  Installing rake 10.3.2
+  ...
+  Using bundler 1.7.4
+  Your bundle is complete!
+  Use `bundle show [gemname]` to see where a bundled gem is installed.
+  ```
+  Note: if you use rbenv...
+  ```sh
+  % rbenv rehash
+  ```
+  You are (almost) there!
+
+1. To test your machine:
+  ```sh
+  % git checkout epic1
+  % ruby asteroids.rb
+  ```
+  You should see a black window with Ruby Hack Night Asteroids in the title bar.
+
+1. If you're keen, have a look at the source to prepare.
+
+## Additional resources
+
+Additional instructions for your platform are here:  
+Linux => https://github.com/gosu/gosu/wiki/Getting-Started-on-Linux  
+OSX => https://github.com/gosu/gosu/wiki/Getting-Started-on-OS-X  
+Windows => https://github.com/gosu/gosu/wiki/Getting-Started-on-OS-X  
+
+## Rules of the game
 
 Game play is just like you remember:
-Shoot the asteroids and they break into smaller asteroids. Large asteroids are worth 20 points, medium 50 points, and small 100 points.
-Press the thrust button to move your ship forward. Unlike in real space, there is drag which slows your ship to a stop over time.
-Watch out for the flying saucer — it shoots in random directions and can crash into you. Shoot it for 500 points.
-If you are in real trouble, press the hyperspace button. This transports you to a different location, but that location may be very dangerous, too!
-When all the asteroids on a level are destroyed, a new level starts. Higher levels have more asteroids.
-You start with 3 ships, and get an extra ship every 10,000 points.
-At the end of the game you can enter your initials if you got one of the top 10 high scores. High scores are stored in EEPROM so they are not erased when power is off. Also, different games use different high score “files” in EEPROM, so your Asteroids scores won’t interfere with your Space Invaders scores, etc.
+* Shoot the asteroids and they break into smaller asteroids. Large asteroids are worth 20 points, medium 50 points, and small 100 points.
+* Press the thrust button to move your ship forward. Unlike in real space, there is drag which slows your ship to a stop over time.
+* Watch out for the flying saucer — it shoots in random directions and can crash into you. Shoot it for 500 points.
+* If you are in real trouble, press the hyperspace button. This transports you to a different location, but that location may be very dangerous, too!
+* When all the asteroids on a level are destroyed, a new level starts. Higher levels have more asteroids.
+* You start with 3 ships, and get an extra ship every 10,000 points.
+* At the end of the game you can enter your initials if you got one of the top 10 high scores. High scores are stored in EEPROM so they are not erased when power is off. Also, different games use different high score “files” in EEPROM, so your Asteroids scores won’t interfere with your Space Invaders scores, etc.
 
-The main loop of the game looks basically like this. Some details are omitted, but this is the basic idea:
+## Gosu main loop
+
+Gosu will call your #update and #draw methods in an infinite loop. You will need to do all of the updates the on-screen objects in #update, and draw the objects in #draw. More about this later...
+
+The main loop of the game will look like this.
 ```
-void loop() {
-  moveAsteroids();
-  moveShots();
-  getInput();
-  moveShip();
-  drawShip();
-  drawSaucer();
-  killed = detectCollisions();
-  if (killed) {
+def update
+  run the physics engine (chipmunk) to move your objects around and cause collisions
+  get_player_input
+  if killed
     // pause and reset the ship...
-  }
-  drawExplosions();
-  if (nAsteroids == 0) {
+  end
+  if asteroids.count == 0
     // reset variables...
-    newLevel();
-  }
-  if (remainingShips == 0) {
-    gameOver();
-    if (score > 0) {
-      enterHighScore(1);
-    }
-  }
-}
+    Level.new
+  end
+  if remaining_ships == 0
+    game_over_dude!
+  end
+end
+
+def draw
+  draw_asteroids
+  draw_ship
+  draw_shots
+  draw_aliens
+  drawExplosions
+end
 ```
 
 This game is all about collision detection. While the game is running, the code needs to detect the following collisions:
 * collisions between your ship and asteroids
 * collisions between the shots you fire and asteroids
-* collisions between the saucer and your ship
-* collisions between the saucer’s fired shot and your ship
-* collisions between the shots you fire and the saucer
+* collisions between the alien and your ship
+* collisions between the alien’s fired shot and your ship
+* collisions between the shots you fire and the alien
+...and more.
 
-The key to these collision detections is using a “point in polygon” algorithm which determines whether a point is within the bounds of a polygon defined as a set of vertices.
+## Epic 1 - Main loop and the Player class
+1. Create the Player class with body, shape and draw methods (plus others)
+1. Use the keyboard to control movement (left, right, thrust, hyperspace)
+1. Create damping on the Player so that they slow down over time
+1. Thrusting makes noise
+1. More hints as we work through this tonight
 
-The point-in-polygon algorithm is surprisingly short, but not very easy to understand. Here’s the function inPolygon which takes as arguments the number of vertices, an array of the X coordinates of the vertices, an array of the Y coordinates of the vertices, and the (x,y) coordinates of the point we are testing.
-```
-/*                                                                                                 
- * This is the point-in-polygon algorithm adapted from                                             
- * http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html                          
- */
-boolean inPolygon(byte nvert, byte *xvert, byte *yvert, int x, int y) {
-  char i, j;
-  byte xvi, xvj, yvi, yvj;
-  boolean inside = false;
-  for (i=0, j=nvert-1; i<nvert; j=i++) {
-    xvi = pgm_read_byte(xvert + i);
-    xvj = pgm_read_byte(xvert + j);
-    yvi = pgm_read_byte(yvert + i);
-    yvj = pgm_read_byte(yvert + j);
-    if ( ((yvi > y) != (yvj > y)) &&
-         (x < (xvj - xvi) * (y - yvi) / (yvj - yvi) + xvi) )
-       inside = !inside;
-  }
-  return inside;
-}
-```
+## Epic 2 - Asteroids
+1. Create the asteroids in three sizes with body, shape and draw
+1. Asteroids don't bump into each other
+1. Detect collisions between the Player and Asteroids (infinite respawn!)
+1. Asteroids split into smaller chunks
+1. Asteroids move in random directions and speeds
+1. Asteroids crash as they hit things
+1. More hints as we work through this tonight
 
-Each object displayed on the screen is defined by a set of vertices for the purpose of detecting collisions. The vertices define a polygon which let us detect if a point is in the polygon. For example, the code needs to detect if any of the shots fired by our ship are within any of the polygons that define the asteroids. This point-in-polygon algorithm is used for all collision detection in the game.
+## Epic 3 - Shooting
+1. Create shots/bullets
+1. Shots move fast in the direction you are pointing
+1. Shooting makes noise
+1. Shots collide with asteroids
+1. There is a limit of 4 shots on-screen
+1. More hints as we work through this tonight
+
+## Epic 4 - Scoring and the Dock
+1. Create a dock showing the score and number of ships
+1. Asteroids score 20, 50 and 100 points going from small to large
+1. You get three lives to start the game
+1. Once you lose three lives you are done the game
+1. You get a free life each 10k
+1. More hints as we work through this tonight
+
+## Epic 5 - Aliens!
+## Epic 6 - Levels
 
 ## Bonus Features
 
