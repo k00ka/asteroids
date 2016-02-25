@@ -6,8 +6,7 @@ require_relative 'asteroid/base'
 require_relative 'asteroid/large'
 
 class Level
-  def initialize(space)
-    @space = space
+  def initialize
     @round = 0
     @last_alien_at = Gosu.milliseconds
   end

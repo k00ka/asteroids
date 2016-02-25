@@ -31,7 +31,7 @@ class Game < Gosu::Window
     @player = Player.new(@@dt)
 
     # Here are the game progress indicators
-    @level = Level.new(@space)
+    @level = Level.new
     @dock = Dock.new(3) # this is our score and the display of ships
 
     # COLLISION CALLBACKS
