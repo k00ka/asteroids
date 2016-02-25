@@ -3,7 +3,6 @@
 # Ruby Hack Night Asteroids by David Andrews and Jason Schweier, 2016
 
 require_relative 'body'
-require_relative 'shot'
 
 class Player < Body
   @@ship_image = Gosu::Image.new("media/ship.bmp")
@@ -65,19 +64,6 @@ class Player < Body
     else
       self.spin = 0.0
     end
-  end
-
-  def location_of_gun
-    # the shot must start outside of my body, otherwise a collision will be registered and I'll die
-    position + self.class.radians_to_vec2(angle) * 18
-  end
-
-  def shoot(shooting)
-    if shooting
-      return if @shooting || Shot.shots_taken(self) > 3 # return early if we have already shot for this keypress
-      Shot.shoot(location_of_gun, angle, self)
-    end
-    @shooting = shooting
   end
 
   def hyperspace(hyperspacing)
