@@ -52,7 +52,6 @@ class Alien < Body
       alien.remove_from_space(@@space)
     end
     Alien.stop_sound unless @@aliens.any?
-    random_boom_sound.play
   end
 
   # called each update to apply behaviour to our aliens
