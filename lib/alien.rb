@@ -44,10 +44,6 @@ class Alien < Body
     @@large_alien_image.draw_rot(position.x, position.y, ZOrder::Aliens, 0.0)
   end
 
-  def destroyed!
-    self.class.random_boom_sound.play
-  end
-
   # called each update to remove dead aliens
   def self.cull(aliens)
     aliens.each do |alien|
@@ -55,6 +51,7 @@ class Alien < Body
       alien.remove_from_space(@@space)
     end
     Alien.stop_sound unless @@aliens.any?
+    random_boom_sound.play
   end
 
   # called each update to apply behaviour to our aliens

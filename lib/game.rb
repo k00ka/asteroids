@@ -54,7 +54,6 @@ class Game < Gosu::Window
 
     @space.add_collision_func(:shot, :alien) do |shot_shape, alien_shape|
       @dead_shots << shot_shape.object
-      alien_shape.object.destroyed! # reconsider
       @dead_aliens << alien_shape.object
     end
 
