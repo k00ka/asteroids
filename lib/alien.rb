@@ -46,6 +46,7 @@ class Alien < Body
 
   # called each update to remove dead aliens
   def self.cull(aliens)
+    random_boom_sound.play if aliens.any?
     aliens.each do |alien|
       @@aliens.delete(alien)
       alien.remove_from_space(@@space)
