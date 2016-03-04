@@ -71,6 +71,13 @@ protected
     CP::Vec2.new(rand * WIDTH, rand * HEIGHT)
   end
 
+  def self.random_position_near_edge(how_near = HEIGHT/10)
+    begin
+      position = random_position
+    end while Gosu::distance(position.x, position.y, WIDTH/2, HEIGHT/2) < (HEIGHT - how_near)
+    position
+  end
+
   # zero velocity
   def still
     CP::Vec2.new(0.0, 0.0)

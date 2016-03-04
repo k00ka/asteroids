@@ -14,7 +14,7 @@ module Asteroid
     @@white = 0xff_ffffff
 
     # accept position, so that it can be set when an asteroid is split
-    def initialize(position = self.class.random_position)
+    def initialize(position = self.class.random_position_near_edge)
       super default_shape
 
       self.position = position
