@@ -100,6 +100,13 @@ Game.new.show
 ---
 class:middle
 
+# Chipmunk models
+
+![](https://raw.githubusercontent.com/k00ka/asteroids/master/media/chippy_models.png)
+
+---
+class:middle
+
 #CP::Space
 
 * applies gravity
