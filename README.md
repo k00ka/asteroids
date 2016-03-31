@@ -7,7 +7,7 @@ Created by David Andrews and Jason Schweier
 
 ###Introduction
 
-This project is a simple Ruby Gosu + Chipmunk project. If you follow the instructions below, you can test your machine in advance of the workshop.
+This project is a simple Ruby + Gosu + Chipmunk project. If you follow the instructions below, you can test your machine in advance of the workshop.
 
 We have provided a repository which mimics the setup we used last time, so it should be familiar. The code to be created is found in the ``lib/`` directory.
 
@@ -21,10 +21,13 @@ Here are the steps to get you started with the repo.
   Note: We have included a ``.ruby-version`` file locked to 2.2.3, which you can change to any Ruby 2.x version if you don't have 2.2.3 installed  
   More detailed instructions for each platform are included in the footer. Refer there if you are having issues.
 
-1. At Ryatta Group we use rbenv, and so we've included some optional elements - just skip them if you're using rvm or are not versioning your Ruby.
+1. Fork the repo (optional, recommended):
+  From the page https://github.com/k00ka/asteroids, click the Fork button in the top-right corner. Copy the new repo address (in a box just below the thick red line) into your clipboard. Detailed instructions on forking a repo can be found here: https://help.github.com/articles/fork-a-repo/
+
+1. At Ryatta Group we use rbenv, and so we've included some optional elements - just skip them if you're using rvm or are not versioning your Ruby. If you forked the repo above, your repo_address will be in your clipboard. If not, you should use my repo_address ``git@github.com:k00ka/asteroids.git``
 
   ```sh
-  % git clone git@github.com:k00ka/asteroids.git
+  % git clone <repo_address>
   % cd asteroids
   % gem install bundler
   Fetching: bundler-1.7.4.gem (100%)
