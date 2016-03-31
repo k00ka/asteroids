@@ -1,9 +1,9 @@
 Ruby Hack Night Asteroids
 =========================
 
-Slides and assets for the Asteroids workshop [first presented at Toronto Ruby Hack Night, February 25, 2016]
-Workshop for learning Gosu and Chipmunk
-Created by David Andrews and Jason Schweier
+Slides and assets for the Asteroids workshop [first presented at Toronto Ruby Hack Night, February 25, 2016]  
+Workshop for learning Gosu and Chipmunk  
+Created by David Andrews and Jason Schweier  
 
 ###Introduction
 
