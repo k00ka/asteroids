@@ -8,7 +8,7 @@ class: center middle
 
 # Ruby Hack Night Asteroids
 Gosu and Chipmunk Game Workshop  
-David Andrews  
+David Andrews, Ryatta Group
 
 Big thanks to Jason Schweier
 
