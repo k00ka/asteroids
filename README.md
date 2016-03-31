@@ -5,6 +5,9 @@ Slides and assets for the Asteroids workshop [first presented at Toronto Ruby Ha
 Workshop for learning Gosu and Chipmunk  
 Created by David Andrews and Jason Schweier  
 
+Slides for the workshop are here:  
+https://gnab.github.io/remark/remarkise?url=https://raw.githubusercontent.com/k00ka/asteroids/master/SLIDES.md
+
 ###Introduction
 
 This project is a simple Ruby + Gosu + Chipmunk project. If you follow the instructions below, you can test your machine in advance of the workshop.
