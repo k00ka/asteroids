@@ -102,30 +102,30 @@ class:middle
 
 #CP::Space
 
-applies gravity
-applies damping
-holds bodies and shapes
-manages constraints
-time is applied via #step method
-calls collision callbacks
+* applies gravity
+* applies damping
+* holds bodies and shapes
+* manages constraints
+* time is applied via #step method
+* calls collision callbacks
 
 ---
 class: middle
 
 #CP::Body
 
-stores properties mass, momentum
-measures position, velocity, force
-also angle, angular velocity, torque
-has no shape
+* stores properties mass, momentum
+* measures position, velocity, force
+* also angle, angular velocity, torque
+* has no shape
 
 ---
 class: middle
 
 #CP::Shape
 
-defines boundary of body (collision perimeter)
-body can have multiple shapes
-circles, line segments, polygons
-cannot have dimples
+* defines boundary of body (collision perimeter)
+* body can have multiple shapes
+* circles, line segments, polygons
+* cannot have dimples
 ---
