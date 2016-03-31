@@ -34,7 +34,7 @@ class Game < Gosu::Window
     shape2_array = [CP::Vec2.new(-20.0, -13.0), CP::Vec2.new(-20.0, 14.0), CP::Vec2.new(20.0, 1.0)]
     @shape2 = CP::Shape::Poly.new(CP::Body.new(10.0, 150.0), shape2_array)
     @shape2.body.p = CP::Vec2.new(WIDTH/2-100, HEIGHT/2)
-    @shape2.e = 1
+    @shape2.e = 1.0
     @shape2.body.apply_impulse(CP::Vec2.new(400.0, 0.0), CP::Vec2.new(0.0, 0.0))
     @space.add_body(@shape2.body)
     @space.add_shape(@shape2)
