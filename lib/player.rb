@@ -17,9 +17,9 @@ class Player < Body
   end
 
   def new_ship
-    #position = dead_center
-    #velocity = still
-    #angle = facing_upward
+    #self.position = dead_center
+    #self.velocity = still
+    #self.angle = facing_upward
   end
 
   def apply_damping
@@ -27,7 +27,7 @@ class Player < Body
   end
 
   def warp_to(position)
-    #position = position
+    #self.position = position
   end
 
   def turn

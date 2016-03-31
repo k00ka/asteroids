@@ -19,6 +19,26 @@ class Game < Gosu::Window
 
     # Create our Space
     @space = CP::Space.new
+
+    # DEMO - REMOVE ME
+    @image1 = Gosu::Image.new("media/ship.bmp")
+    shape1_array = [CP::Vec2.new(-20.0, -13.0), CP::Vec2.new(-20.0, 14.0), CP::Vec2.new(20.0, 1.0)]
+    @shape1 = CP::Shape::Poly.new(CP::Body.new(10.0, 150.0), shape1_array)
+    @shape1.body.p = CP::Vec2.new(WIDTH/2+100, HEIGHT/2)
+    @shape1.e = 1.0
+    @shape1.body.apply_impulse(CP::Vec2.new(-400.0, 0.0), CP::Vec2.new(0.0, 0.0))
+    @space.add_body(@shape1.body)
+    @space.add_shape(@shape1)
+
+    @image2 = Gosu::Image.new("media/ship.bmp")
+    shape2_array = [CP::Vec2.new(-20.0, -13.0), CP::Vec2.new(-20.0, 14.0), CP::Vec2.new(20.0, 1.0)]
+    @shape2 = CP::Shape::Poly.new(CP::Body.new(10.0, 150.0), shape2_array)
+    @shape2.body.p = CP::Vec2.new(WIDTH/2-100, HEIGHT/2)
+    @shape2.e = 1
+    @shape2.body.apply_impulse(CP::Vec2.new(400.0, 0.0), CP::Vec2.new(0.0, 0.0))
+    @space.add_body(@shape2.body)
+    @space.add_shape(@shape2)
+    # END DEMO
   end
 
   # Gosu calls this method first - to update the model, which in this case is stored in Chipmunk
@@ -29,6 +49,10 @@ class Game < Gosu::Window
   end
 
   def draw
+    # DEMO - REMOVE ME
+    @image1.draw(@shape1.body.p.x, @shape1.body.p.y, ZOrder::Player)
+    @image2.draw(@shape2.body.p.x, @shape2.body.p.y, ZOrder::Player)
+    # END DEMO
   end
 
   def button_down(id)
